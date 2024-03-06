@@ -1,0 +1,22 @@
+version: '3.4'
+
+services:
+  webserver:
+    image: ${DOCKER_REGISTRY-}webserver
+    build:
+      context: .
+      dockerfile: WebServer/Dockerfile
+    depends_on:
+      - intellect
+    ports:
+      - "5175:5175"
+      - "7175:7175"
+
+  intellect:
+    image: ${DOCKER_REGISTRY-}intellect
+    build:
+      context: .
+      dockerfile: Intellect/Dockerfile
+    ports:
+      - "5291:5291"
+      - "7291:7291"

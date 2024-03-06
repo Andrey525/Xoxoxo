@@ -1,0 +1,167 @@
+﻿@page "/tictactoe"
+
+@using WebServer.Data
+@using Intellectual
+
+@inject NavigationManager NavigationManager
+@inject GrpcChannel Channel
+@inject ILogger<TicTacToePage> _logger
+
+<PageTitle>TicTacToe</PageTitle>
+
+<h3 class=""></h3>
+ 
+<div id="game-screen" class="center">
+  <h2 align="center">TicTacToe Game</h2>
+  <table class="center">
+    <tr>
+      <td>
+        @if (_game.Table[0, 0] == TicTacToeValues.Free)
+        {
+            <button type="button" class="cell" @onclick="() => Handle(0, 0)"></button>
+        }
+        else
+        {
+            <button type="button" class="cell">@_game.Table[0, 0]</button>
+        }
+      </td>
+      <td>
+        @if (_game.Table[0, 1] == TicTacToeValues.Free)
+        {
+            <button type="button" class="cell" @onclick="() => Handle(0, 1)"></button>
+        }
+        else
+        {
+            <button type="button" class="cell">@_game.Table[0, 1]</button>
+        }
+      </td>
+      <td>
+        @if (_game.Table[0, 2] == TicTacToeValues.Free)
+        {
+            <button type="button" class="cell" @onclick="() => Handle(0, 2)"></button>
+        }
+        else
+        {
+            <button type="button" class="cell">@_game.Table[0, 2]</button>
+        }
+      </td>
+    </tr>
+    <tr>
+      <td>
+        @if (_game.Table[1, 0] == TicTacToeValues.Free)
+        {
+            <button type="button" class="cell" @onclick="() => Handle(1, 0)"></button>
+        }
+        else
+        {
+            <button type="button" class="cell">@_game.Table[1, 0]</button>
+        }
+      </td>
+      <td>
+        @if (_game.Table[1, 1] == TicTacToeValues.Free)
+        {
+            <button type="button" class="cell" @onclick="() => Handle(1, 1)"></button>
+        }
+        else
+        {
+            <button type="button" class="cell">@_game.Table[1, 1]</button>
+        }
+      </td>
+      <td>
+        @if (_game.Table[1, 2] == TicTacToeValues.Free)
+        {
+            <button type="button" class="cell" @onclick="() => Handle(1, 2)"></button>
+        }
+        else
+        {
+            <button type="button" class="cell">@_game.Table[1, 2]</button>
+        }
+      </td>
+    </tr>
+    <tr>
+      <td>
+        @if (_game.Table[2, 0] == TicTacToeValues.Free)
+        {
+            <button type="button" class="cell" @onclick="() => Handle(2, 0)"></button>
+        }
+        else
+        {
+            <button type="button" class="cell">@_game.Table[2, 0]</button>
+        }
+      </td>
+      <td>
+        @if (_game.Table[2, 1] == TicTacToeValues.Free)
+        {
+            <button type="button" class="cell" @onclick="() => Handle(2, 1)"></button>
+        }
+        else
+        {
+            <button type="button" class="cell">@_game.Table[2, 1]</button>
+        }
+      </td>
+      <td>
+        @if (_game.Table[2, 2] == TicTacToeValues.Free)
+        {
+            <button type="button" class="cell" @onclick="() => Handle(2, 2)"></button>
+        }
+        else
+        {
+            <button type="button" class="cell">@_game.Table[2, 2]</button>
+        }
+      </td>
+    </tr>
+  </table>
+  <button type="button" id="restart" @onclick=@ReloadPage>Restart</button>
+</div>
+
+@if (_game.GameState != TicTacToeGameState.WaitXMove &&
+     _game.GameState != TicTacToeGameState.WaitOMove)
+{
+    <h2 align="center">Game over! @_game.GameState</h2>   
+}
+
+@code {
+    private TicTacToeGame _game;
+    private TicTacToeBot _bot;
+
+    private void ReloadPage()
+    {
+        NavigationManager.NavigateTo(NavigationManager.Uri, true);
+    }
+
+    protected override void OnInitialized()
+    {
+        var grpcClient = new IntellectService.IntellectServiceClient(Channel);
+        _game = new TicTacToeGame();
+        _bot = new TicTacToeBot(grpcClient);
+    }
+
+    private async void Handle(int row, int col)
+    {
+        _logger.LogInformation($"Filed {row}:{col} clicked");
+
+        _logger.LogInformation(_game.GameState.ToString());
+        if (_game.GameState == TicTacToeGameState.WaitXMove)
+        {
+            try
+            {
+                _game.MakeMove(row, col, TicTacToeValues.X);
+                _logger.LogInformation(_game.GameState.ToString());
+
+                if (_game.GameState != TicTacToeGameState.WaitOMove)
+                    return;
+
+                var coord = await _bot.ThinkAboutHowToMove(_game);
+                _logger.LogInformation(coord.Item1.ToString() + coord.Item2.ToString());
+                _game.MakeMove(coord.Item1, coord.Item2, TicTacToeValues.O);
+                StateHasChanged();
+                if (_game.GameState != TicTacToeGameState.WaitXMove)
+                    return;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+            }
+        }
+    }
+}

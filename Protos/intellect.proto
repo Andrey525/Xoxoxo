@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "Intellectual";
+
+package intellect;
+
+service IntellectService {
+  rpc CallToFriend (TableState) returns (CoordReply);
+}
+
+message RowState {
+  repeated int32 values = 1;
+}
+
+message TableState {
+  repeated RowState rows = 1;
+}
+
+message CoordReply {
+  int32 status = 1;
+  int32 row = 2;
+  int32 col = 3;
+}
