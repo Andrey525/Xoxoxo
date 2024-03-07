@@ -1,41 +1,122 @@
-﻿using TicTacToeLib;
-
+﻿
 namespace Intellectual.Data
 {
     public static class Intellect
     {
-        public static Tuple<int, int> GetBestMoveCoord(TicTacToeModel model)
+        public static Tuple<int, int> GetBestMoveCoord(Table table)
         {
-            int[,] table = new int[3, 3];
-            for (int i = 0; i < table.GetLength(0); i++)
+            Value whoseMove;
+            Move result;
+            try
             {
-                for (int j = 0; j < table.GetLength(1); j++)
+                ReadState(table, out whoseMove);
+                result = Minimax(table, whoseMove);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message); // logger
+                throw new Exception(e.Message);
+            }
+            return Tuple.Create(result.Coord.Row, result.Coord.Col);
+        }
+
+        private static void ReadState(Table table, out Value whoseMove)
+        {
+            int Xcount = 0;
+            int Ocount = 0;
+            int freeCount = 0;
+            for (int i = 0; i < Table.Size; i++)
+            {
+                for (int j = 0; j < Table.Size; j++)
                 {
-                    table[i, j] = (int)model.Table[i, j];
+                    if (!Enum.IsDefined(typeof(Value), table[i, j]))
+                    {
+                        throw new ArgumentException("Invalid value in table");
+                    }
+
+                    if (table[i, j] == Value.X)
+                        Xcount++;
+                    else if (table[i, j] == Value.O)
+                        Ocount++;
+                    else
+                        freeCount++;
                 }
             }
 
-            if (model.State == TicTacToeState.WaitOMove)
+            if (freeCount == 0)
             {
-                var result = Minimax(table, 2);
-                return Tuple.Create(result.i, result.j);
+                throw new Exception("No free cells");
             }
-            else if (model.State == TicTacToeState.WaitXMove)
+
+            if (Xcount == Ocount)
             {
-                var result = Minimax(table, 1);
-                return Tuple.Create(result.i, result.j);
+                // last move was by O
+                whoseMove = Value.X;
             }
-            return Tuple.Create(0, 0);
+            else if (Xcount == Ocount + 1)
+            {
+                // last move was by X
+                whoseMove = Value.O;
+            }
+            else
+                throw new Exception("Invalid State");
+
+            if (IsWinner(table, Value.X) || IsWinner(table, Value.O))
+            {
+                throw new Exception("Already have winner. Or may be invalid State");
+            }
         }
 
-        private static List<Coord> GetAvailableFields(in int[,] table)
+        private static bool IsWinner(Table table, Value value)
+        {
+            for (int i = 0; i < Table.Size; i++)
+            {
+                for (int j = 0; j < Table.Size; j++)
+                {
+                    if (table[i, j] != value)
+                        break;
+                    if (j == Table.Size - 1)
+                        return true;
+                }
+            }
+
+            for (int i = 0; i < Table.Size; i++)
+            {
+                for (int j = 0; j < Table.Size; j++)
+                {
+                    if (table[j, i] != value)
+                        break;
+                    if (j == Table.Size - 1)
+                        return true;
+                }
+            }
+
+            for (int i = 0; i < Table.Size; i++)
+            {
+                if (table[i, i] != value)
+                    break;
+                if (i == Table.Size - 1)
+                    return true;
+            }
+
+            for (int i = 0; i < Table.Size; i++)
+            {
+                if (table[i, (Table.Size - 1) - i] != value)
+                    break;
+                if (i == Table.Size - 1)
+                    return true;
+            }
+            return false;
+        }
+
+        private static List<Coord> GetAvailableFields(Table table)
         {
             var availableFields = new List<Coord>();
-            for (int i = 0; i < TicTacToeTable.Size; i++)
+            for (int i = 0; i < Table.Size; i++)
             {
-                for (int j = 0; j < TicTacToeTable.Size; j++)
+                for (int j = 0; j < Table.Size; j++)
                 {
-                    if (table[i, j] == 0)
+                    if (table[i, j] == Value.No)
                     {
                         availableFields.Add(new Coord(i, j));
                     }
@@ -46,48 +127,35 @@ namespace Intellectual.Data
 
         private struct Coord
         {
-            public Coord(int x, int y)
+            public Coord(int row, int col)
             {
-                i = x;
-                j = y;
+                Row = row;
+                Col = col;
             }
-            public int i { get; set; }
-            public int j { get; set; }
+            public int Row { get; set; }
+            public int Col { get; set; }
         }
         private struct Move
         {
-            public int i { get; set; }
-            public int j { get; set; }
-            public int score { get; set; }
+            public Coord Coord { get; set; }
+            public int Score { get; set; }
         }
 
-        private static bool HaveWinner(in int[,] table, int who)
-        {
-            return (table[0, 0] == who && table[0, 1] == who && table[0, 2] == who) ||
-                (table[1, 0] == who && table[1, 1] == who && table[1, 2] == who) ||
-                (table[2, 0] == who && table[2, 1] == who && table[2, 2] == who) ||
-                (table[0, 0] == who && table[1, 0] == who && table[2, 0] == who) ||
-                (table[0, 1] == who && table[1, 1] == who && table[2, 1] == who) ||
-                (table[0, 2] == who && table[1, 2] == who && table[2, 2] == who) ||
-                (table[0, 0] == who && table[1, 1] == who && table[2, 2] == who) ||
-                (table[0, 2] == who && table[1, 1] == who && table[2, 0] == who);
-        }
-
-        private static Move Minimax(in int[,] table, int who)
+        private static Move Minimax(Table table, Value whoseMove)
         {
             var availableFields = GetAvailableFields(table);
 
-            if (HaveWinner(table, 1))
+            if (IsWinner(table, Value.X))
             {
-                return new Move { score = -10 };
+                return new Move { Score = -10 };
             }
-            else if (HaveWinner(table, 2))
+            else if (IsWinner(table, Value.O))
             {
-                return new Move { score = 10 };
+                return new Move { Score = 10 };
             }
             else if (availableFields.Count == 0)
             {
-                return new Move { score = 0 };
+                return new Move { Score = 0 };
             }
 
             var moves = new List<Move>();
@@ -95,49 +163,49 @@ namespace Intellectual.Data
             for (int i = 0; i < availableFields.Count; i++)
             {
                 var move = new Move();
-                move.i = availableFields[i].i;
-                move.j = availableFields[i].j;
-                table[move.i, move.j] = who;
+                var coord = new Coord();
+                coord.Row = availableFields[i].Row;
+                coord.Col = availableFields[i].Col;
+                move.Coord = coord;
 
-                if (who == 1)
+                table[move.Coord.Row, move.Coord.Col] = whoseMove;
+
+                if (whoseMove == Value.X)
                 {
-                    var result = Minimax(table, 2);
-                    move.score = result.score;
+                    var result = Minimax(table, Value.O);
+                    move.Score = result.Score;
                 }
                 else
                 {
-                    var result = Minimax(table, 1);
-                    move.score = result.score;
+                    var result = Minimax(table, Value.X);
+                    move.Score = result.Score;
                 }
 
-                table[move.i, move.j] = 0;
+                table[move.Coord.Row, move.Coord.Col] = Value.No;
 
                 moves.Add(move);
             }
 
-            int bestMove = 0;
             int bestScore;
-            if (who == 2)
+            if (whoseMove == Value.O)
             {
-                bestScore = -10000;
+                bestScore = int.MinValue;
                 for (int i = 0; i < moves.Count; i++)
                 {
-                    if (moves[i].score > bestScore)
+                    if (moves[i].Score > bestScore)
                     {
-                        bestScore = moves[i].score;
-                        bestMove = i;
+                        bestScore = moves[i].Score;
                     }
                 }
             }
             else
             {
-                bestScore = 10000;
+                bestScore = int.MaxValue;
                 for (int i = 0; i < moves.Count; i++)
                 {
-                    if (moves[i].score < bestScore)
+                    if (moves[i].Score < bestScore)
                     {
-                        bestScore = moves[i].score;
-                        bestMove = i;
+                        bestScore = moves[i].Score;
                     }
                 }
             }
@@ -146,13 +214,13 @@ namespace Intellectual.Data
             var indexes = new List<int>();
             for (int i = 0; i < moves.Count; i++)
             {
-                if (moves[i].score == bestScore)
+                if (moves[i].Score == bestScore)
                     indexes.Add(i);
             }
 
             Random random = new Random();
             var randIndex = random.Next(0, indexes.Count);
-            bestMove = indexes[randIndex];
+            var bestMove = indexes[randIndex];
             //
 
             return moves[bestMove];

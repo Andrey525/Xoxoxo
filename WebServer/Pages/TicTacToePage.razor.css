@@ -35,8 +35,15 @@ button {
     width: 300px;
 }
 
-/******  HELPER CLASSES  ******/
+#choose-value {
+    font-size: 24px;
+    margin: 40px auto;
+    display: block;
+    border-radius: 2px;
+    width: 150px;
+}
 
+/******  HELPER CLASSES  ******/
 .center {
     margin: 40px auto;
 }

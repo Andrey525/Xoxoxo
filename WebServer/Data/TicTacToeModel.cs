@@ -1,4 +1,4 @@
-﻿namespace TicTacToeLib
+﻿namespace WebServer.Data
 {
     public class TicTacToeModel
     {
@@ -12,66 +12,6 @@
             Table = new TicTacToeTable();
             State = SetWaitStateByValue(firstMoveValue);
         }
-
-        public TicTacToeModel(List<TicTacToeValue> values)
-        {
-            if (values == null || values.Count != TicTacToeTable.Size * TicTacToeTable.Size)
-            {
-                throw new ArgumentException("Bad list");
-            }
-            Table = new TicTacToeTable();
-            int Xcount = 0;
-            int Ocount = 0;
-            int freeCount = 0;
-            for (int i = 0; i < TicTacToeTable.Size; i++)
-            {
-                for (int j = 0; j < TicTacToeTable.Size; j++)
-                {
-                    if (!Enum.IsDefined(typeof(TicTacToeValue), values[(i * TicTacToeTable.Size) + j]))
-                    {
-                        throw new ArgumentException("Invalid value in table");
-                    }
-
-                    if (values[(i * TicTacToeTable.Size) + j] == TicTacToeValue.X)
-                        Xcount++;
-                    else if (values[(i * TicTacToeTable.Size) + j] == TicTacToeValue.O)
-                        Ocount++;
-                    else
-                        freeCount++;
-
-                    Table[i, j] = values[(i * TicTacToeTable.Size) + j];
-                }
-            }
-
-            _moveCount = TicTacToeTable.Size - freeCount;
-
-            if (Xcount == Ocount)
-            {
-                // last move was by O
-                State = SetWaitStateByValue(TicTacToeValue.X);
-            }
-            else if (Xcount == Ocount + 1)
-            {
-                // last move was by X
-                State = SetWaitStateByValue(TicTacToeValue.O);
-            }
-            else
-                throw new Exception("Invalid Game State");
-
-            if (freeCount == 0)
-            {
-                State = TicTacToeState.Draw;
-                return;
-            }
-
-            var winner = DetermineWinner((State == TicTacToeState.WaitXMove) ? TicTacToeValue.O : TicTacToeValue.X);
-            if (winner != TicTacToeValue.No)
-            {
-                State = SetWinStateByWinnerValue(winner);
-                return;
-            }
-        }
-
         public void MakeMove(int row, int col, TicTacToeValue value)
         {
             if (State != TicTacToeState.WaitXMove &&

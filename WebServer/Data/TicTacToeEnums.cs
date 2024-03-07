@@ -1,4 +1,4 @@
-﻿namespace TicTacToeLib
+﻿namespace WebServer.Data
 {
     public enum TicTacToeValue
     {

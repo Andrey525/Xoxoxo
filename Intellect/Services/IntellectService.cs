@@ -1,5 +1,5 @@
 using Grpc.Core;
-using TicTacToeLib;
+using Intellectual.Data;
 
 namespace Intellectual.Services
 {
@@ -15,26 +15,23 @@ namespace Intellectual.Services
 
         public override Task<CoordReply> CallToFriend(TableState request, ServerCallContext context)
         {
-            if (request.Values.Count != TicTacToeTable.Size * TicTacToeTable.Size)
+            if (request.Values.Count != Table.Count)
             {
                 _logger.LogError($"CallToFriend: Wrong count elems");
                 return Task.FromResult(new CoordReply { Status = -1 });
             }
 
-            var values = new List<TicTacToeValue>();
+            var table = new Table();
 
             for (int i = 0; i < request.Values.Count; i++)
             {
-                values.Add((TicTacToeValue)request.Values[i]);
+                table[i / Table.Size, i % Table.Size] = (Value)request.Values[i];
             }
-
-
-            TicTacToeModel model = new TicTacToeModel((List<TicTacToeValue>)values);
 
             Tuple<int, int> coords;
             try
             {
-                coords = Intellectual.Data.Intellect.GetBestMoveCoord(model);
+                coords = Intellectual.Data.Intellect.GetBestMoveCoord(table);
             }
             catch (Exception e)
             {
