@@ -17,12 +17,10 @@ namespace WebServer.Data
             var tableState = new TableState();
             for (int i = 0; i < TicTacToeTable.Size; i++)
             {
-                var row = new RowState();
                 for (int j = 0; j < TicTacToeTable.Size; j++)
                 {
-                    row.Values.Add((int)gameModel.Table[i, j]);
+                    tableState.Values.Add((int)gameModel.Table[i, j]);
                 }
-                tableState.Rows.Add(row);
             }
             var reply = await Client.CallToFriendAsync(tableState);
 

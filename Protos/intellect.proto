@@ -10,12 +10,8 @@ service IntellectService {
   rpc CallToFriend (TableState) returns (CoordReply);
 }
 
-message RowState {
-  repeated int32 values = 1;
-}
-
 message TableState {
-  repeated RowState rows = 1;
+  repeated int32 values = 1;
 }
 
 message CoordReply {

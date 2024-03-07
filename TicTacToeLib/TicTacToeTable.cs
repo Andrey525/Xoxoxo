@@ -7,7 +7,7 @@
         public TicTacToeValue this[int row, int col]
         {
             get => _values[row, col];
-            set
+            internal set
             {
                 if (_values[row, col] == TicTacToeValue.No)
                 {
