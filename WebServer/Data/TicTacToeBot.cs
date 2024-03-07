@@ -24,7 +24,7 @@ namespace WebServer.Data
                 tableState.Rows.Add(row);
             }
             var reply = await Client.CallToFriendAsync(tableState);
-
+            // check status may be error
             return Tuple.Create(reply.Row, reply.Col);
         }
     }
