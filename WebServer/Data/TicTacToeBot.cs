@@ -1,4 +1,5 @@
 ﻿using Intellectual;
+using TicTacToeLib;
 
 namespace WebServer.Data
 {
@@ -11,20 +12,25 @@ namespace WebServer.Data
         }
 
         private IntellectService.IntellectServiceClient Client { get; set; }
-        public async Task<Tuple<int, int>> ThinkAboutHowToMove(TicTacToeGame game)
+        public async Task<Tuple<int, int>> ThinkAboutHowToMove(TicTacToeModel gameModel)
         {
             var tableState = new TableState();
-            for (int i = 0; i < game.Table.GetLength(0); i++)
+            for (int i = 0; i < TicTacToeTable.Size; i++)
             {
                 var row = new RowState();
-                for (int j = 0; j < game.Table.GetLength(1); j++)
+                for (int j = 0; j < TicTacToeTable.Size; j++)
                 {
-                    row.Values.Add((int)game.Table[i, j]);
+                    row.Values.Add((int)gameModel.Table[i, j]);
                 }
                 tableState.Rows.Add(row);
             }
             var reply = await Client.CallToFriendAsync(tableState);
-            // check status may be error
+
+            if (reply.Status == -1)
+            {
+                throw new Exception("Invalid reply");
+            }
+
             return Tuple.Create(reply.Row, reply.Col);
         }
     }

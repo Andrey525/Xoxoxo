@@ -1,5 +1,6 @@
 ﻿@page "/tictactoe"
 
+@using TicTacToeLib
 @using WebServer.Data
 @using Intellectual
 
@@ -16,97 +17,97 @@
   <table class="center">
     <tr>
       <td>
-        @if (_game.Table[0, 0] == TicTacToeValues.Free)
+        @if (_gameModel.Table[0, 0] == TicTacToeValue.No)
         {
             <button type="button" class="cell" @onclick="() => Handle(0, 0)"></button>
         }
         else
         {
-            <button type="button" class="cell">@_game.Table[0, 0]</button>
+            <button type="button" class="cell">@_gameModel.Table[0, 0]</button>
         }
       </td>
       <td>
-        @if (_game.Table[0, 1] == TicTacToeValues.Free)
+        @if (_gameModel.Table[0, 1] == TicTacToeValue.No)
         {
             <button type="button" class="cell" @onclick="() => Handle(0, 1)"></button>
         }
         else
         {
-            <button type="button" class="cell">@_game.Table[0, 1]</button>
+            <button type="button" class="cell">@_gameModel.Table[0, 1]</button>
         }
       </td>
       <td>
-        @if (_game.Table[0, 2] == TicTacToeValues.Free)
+        @if (_gameModel.Table[0, 2] == TicTacToeValue.No)
         {
             <button type="button" class="cell" @onclick="() => Handle(0, 2)"></button>
         }
         else
         {
-            <button type="button" class="cell">@_game.Table[0, 2]</button>
+            <button type="button" class="cell">@_gameModel.Table[0, 2]</button>
         }
       </td>
     </tr>
     <tr>
       <td>
-        @if (_game.Table[1, 0] == TicTacToeValues.Free)
+        @if (_gameModel.Table[1, 0] == TicTacToeValue.No)
         {
             <button type="button" class="cell" @onclick="() => Handle(1, 0)"></button>
         }
         else
         {
-            <button type="button" class="cell">@_game.Table[1, 0]</button>
+            <button type="button" class="cell">@_gameModel.Table[1, 0]</button>
         }
       </td>
       <td>
-        @if (_game.Table[1, 1] == TicTacToeValues.Free)
+        @if (_gameModel.Table[1, 1] == TicTacToeValue.No)
         {
             <button type="button" class="cell" @onclick="() => Handle(1, 1)"></button>
         }
         else
         {
-            <button type="button" class="cell">@_game.Table[1, 1]</button>
+            <button type="button" class="cell">@_gameModel.Table[1, 1]</button>
         }
       </td>
       <td>
-        @if (_game.Table[1, 2] == TicTacToeValues.Free)
+        @if (_gameModel.Table[1, 2] == TicTacToeValue.No)
         {
             <button type="button" class="cell" @onclick="() => Handle(1, 2)"></button>
         }
         else
         {
-            <button type="button" class="cell">@_game.Table[1, 2]</button>
+            <button type="button" class="cell">@_gameModel.Table[1, 2]</button>
         }
       </td>
     </tr>
     <tr>
       <td>
-        @if (_game.Table[2, 0] == TicTacToeValues.Free)
+        @if (_gameModel.Table[2, 0] == TicTacToeValue.No)
         {
             <button type="button" class="cell" @onclick="() => Handle(2, 0)"></button>
         }
         else
         {
-            <button type="button" class="cell">@_game.Table[2, 0]</button>
+            <button type="button" class="cell">@_gameModel.Table[2, 0]</button>
         }
       </td>
       <td>
-        @if (_game.Table[2, 1] == TicTacToeValues.Free)
+        @if (_gameModel.Table[2, 1] == TicTacToeValue.No)
         {
             <button type="button" class="cell" @onclick="() => Handle(2, 1)"></button>
         }
         else
         {
-            <button type="button" class="cell">@_game.Table[2, 1]</button>
+            <button type="button" class="cell">@_gameModel.Table[2, 1]</button>
         }
       </td>
       <td>
-        @if (_game.Table[2, 2] == TicTacToeValues.Free)
+        @if (_gameModel.Table[2, 2] == TicTacToeValue.No)
         {
             <button type="button" class="cell" @onclick="() => Handle(2, 2)"></button>
         }
         else
         {
-            <button type="button" class="cell">@_game.Table[2, 2]</button>
+            <button type="button" class="cell">@_gameModel.Table[2, 2]</button>
         }
       </td>
     </tr>
@@ -114,14 +115,14 @@
   <button type="button" id="restart" @onclick=@ReloadPage>Restart</button>
 </div>
 
-@if (_game.GameState != TicTacToeGameState.WaitXMove &&
-     _game.GameState != TicTacToeGameState.WaitOMove)
+@if (_gameModel.State != TicTacToeState.WaitXMove &&
+     _gameModel.State != TicTacToeState.WaitOMove)
 {
-    <h2 align="center">Game over! @_game.GameState</h2>   
+    <h2 align="center">Game over! @_gameModel.State</h2>   
 }
 
 @code {
-    private TicTacToeGame _game;
+    private TicTacToeModel _gameModel;
     private TicTacToeBot _bot;
 
     private void ReloadPage()
@@ -132,7 +133,7 @@
     protected override void OnInitialized()
     {
         var grpcClient = new IntellectService.IntellectServiceClient(Channel);
-        _game = new TicTacToeGame();
+        _gameModel = new TicTacToeModel(TicTacToeValue.X);
         _bot = new TicTacToeBot(grpcClient);
     }
 
@@ -140,22 +141,32 @@
     {
         _logger.LogInformation($"Filed {row}:{col} clicked");
 
-        _logger.LogInformation(_game.GameState.ToString());
-        if (_game.GameState == TicTacToeGameState.WaitXMove)
+        _logger.LogInformation(_gameModel.State.ToString());
+        if (_gameModel.State == TicTacToeState.WaitXMove)
         {
             try
             {
-                _game.MakeMove(row, col, TicTacToeValues.X);
-                _logger.LogInformation(_game.GameState.ToString());
+                _gameModel.MakeMove(row, col, TicTacToeValue.X);
+                _logger.LogInformation(_gameModel.State.ToString());
 
-                if (_game.GameState != TicTacToeGameState.WaitOMove)
+                if (_gameModel.State != TicTacToeState.WaitOMove)
                     return;
 
-                var coord = await _bot.ThinkAboutHowToMove(_game);
+                Tuple<int, int> coord;
+                try
+                {
+                    coord = await _bot.ThinkAboutHowToMove(_gameModel);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.Message);
+                    return;
+                }
+
                 _logger.LogInformation(coord.Item1.ToString() + coord.Item2.ToString());
-                _game.MakeMove(coord.Item1, coord.Item2, TicTacToeValues.O);
+                _gameModel.MakeMove(coord.Item1, coord.Item2, TicTacToeValue.O);
                 StateHasChanged();
-                if (_game.GameState != TicTacToeGameState.WaitXMove)
+                if (_gameModel.State != TicTacToeState.WaitXMove)
                     return;
             }
             catch (Exception e)
