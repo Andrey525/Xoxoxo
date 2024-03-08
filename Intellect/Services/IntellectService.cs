@@ -31,7 +31,10 @@ namespace Intellectual.Services
             Tuple<int, int> coords;
             try
             {
-                coords = Intellectual.Data.Intellect.GetBestMoveCoord(table);
+                using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+                var logger = factory.CreateLogger<Data.Intellect>();
+                var intellect = new Data.Intellect(logger, table);
+                coords = intellect.GetBestMoveCoord(table);
             }
             catch (Exception e)
             {

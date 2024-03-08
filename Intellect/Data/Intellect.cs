@@ -1,9 +1,16 @@
 ﻿
 namespace Intellectual.Data
 {
-    public static class Intellect
+    public class Intellect
     {
-        public static Tuple<int, int> GetBestMoveCoord(Table table)
+        private readonly ILogger<Intellect> _logger;
+        private Table MTable;
+        public Intellect(ILogger<Intellect> logger, Table mTable)
+        {
+            _logger = logger;
+            MTable = mTable;
+        }
+        public Tuple<int, int> GetBestMoveCoord(Table table)
         {
             Value whoseMove;
             Move result;
@@ -14,13 +21,13 @@ namespace Intellectual.Data
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message); // logger
+                _logger.LogError($"GetBestMoveCoord: {e.Message}");
                 throw new Exception(e.Message);
             }
             return Tuple.Create(result.Coord.Row, result.Coord.Col);
         }
 
-        private static void ReadState(Table table, out Value whoseMove)
+        private void ReadState(Table table, out Value whoseMove)
         {
             int Xcount = 0;
             int Ocount = 0;
@@ -67,7 +74,7 @@ namespace Intellectual.Data
             }
         }
 
-        private static bool IsWinner(Table table, Value value)
+        private bool IsWinner(Table table, Value value)
         {
             for (int i = 0; i < Table.Size; i++)
             {
@@ -109,7 +116,7 @@ namespace Intellectual.Data
             return false;
         }
 
-        private static List<Coord> GetAvailableFields(Table table)
+        private List<Coord> GetAvailableFields(Table table)
         {
             var availableFields = new List<Coord>();
             for (int i = 0; i < Table.Size; i++)
@@ -141,7 +148,7 @@ namespace Intellectual.Data
             public int Score { get; set; }
         }
 
-        private static Move Minimax(Table table, Value whoseMove)
+        private Move Minimax(Table table, Value whoseMove)
         {
             var availableFields = GetAvailableFields(table);
 

@@ -193,14 +193,13 @@
          try
          {
              coord = await _bot.ThinkAboutHowToMove(_gameModel);
+            _logger.LogInformation(coord.Item1.ToString() + coord.Item2.ToString());
+            _gameModel.MakeMove(coord.Item1, coord.Item2, _botValue);
          }
          catch (Exception e)
          {
              _logger.LogError(e.Message);
              return;
          }
-
-         _logger.LogInformation(coord.Item1.ToString() + coord.Item2.ToString());
-         _gameModel.MakeMove(coord.Item1, coord.Item2, _botValue);
     }
 }
