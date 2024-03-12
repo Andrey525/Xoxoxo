@@ -8,15 +8,17 @@ service IntellectService {
 	rpc CallToFriend (TableState) returns (CoordReply);
 }
 
-message TableState {
-	repeated int32 values = 1;
-	int32 size = 2;
-}
-
 enum StatusCode
 {
 	SUCCESS = 0;
 	ERROR = 1;
+}
+
+message TableState {
+	repeated int32 values = 1;
+	int32 size = 2;
+	int32 state = 3;
+	int32 move_count = 4;
 }
 
 message Coord {

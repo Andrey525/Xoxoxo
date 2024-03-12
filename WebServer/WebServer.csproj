@@ -20,6 +20,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\TicTacToeLib\TicTacToeLib.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Protobuf Include="..\Protos\intellect.proto" GrpcServices="Client" Link="Protos\intellect.proto" />
 	</ItemGroup>
 

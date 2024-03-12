@@ -1,4 +1,5 @@
 ﻿using Intellectual;
+using TicTacToeLib;
 
 namespace WebServer.Data
 {
@@ -22,6 +23,8 @@ namespace WebServer.Data
                 }
             }
             tableState.Size = memento.Table.Size;
+            tableState.MoveCount = memento.MoveCount;
+            tableState.State = (int)memento.State;
             var reply = await Client.CallToFriendAsync(tableState);
 
             if (reply.Status == StatusCode.Error)

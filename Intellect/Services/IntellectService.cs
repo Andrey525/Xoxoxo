@@ -1,5 +1,5 @@
 using Grpc.Core;
-using Intellectual.Data;
+using TicTacToeLib;
 
 namespace Intellectual.Services
 {
@@ -21,20 +21,31 @@ namespace Intellectual.Services
                 return Task.FromResult(new CoordReply { Status = StatusCode.Error });
             }
 
-            var table = new Table();
-
-            for (int i = 0; i < request.Values.Count; i++)
+            /*
+             * Need normal Converter!!!
+             */
+            //
+            var table = new TicTacToeTable(request.Size);
+            for (int i = 0; i < table.Size; i++)
             {
-                table[i / Table.Size, i % Table.Size] = (Value)request.Values[i];
+                for (int j = 0; j < request.Size; j++)
+                {
+                    table[i, j] = (TicTacToeValue)request.Values[i * table.Size + j];
+                }
             }
+            //
+
+            TicTacToeMemento memento = new TicTacToeMemento(request.MoveCount, (TicTacToeState)request.State, table);
+
+            TicTacToeModel model = new TicTacToeModel(memento);
 
             Tuple<int, int> coords;
             try
             {
                 using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
                 var logger = factory.CreateLogger<Data.Intellect>();
-                var intellect = new Data.Intellect(logger, table);
-                coords = intellect.GetBestMoveCoord(table);
+                var intellect = new Data.Intellect(logger, model);
+                coords = intellect.GetBestMoveCoord();
             }
             catch (Exception e)
             {
