@@ -20,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\TicTacToeLib\TicTacToeLib.csproj" />
+	  <ProjectReference Include="..\TicTacToeLib\TicTacToeLib.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

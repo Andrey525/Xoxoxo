@@ -6,6 +6,7 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["WebServer/WebServer.csproj", "WebServer/"]
+COPY ["TicTacToeLib/TicTacToeLib.csproj", "TicTacToeLib/"]
 RUN dotnet restore "WebServer/WebServer.csproj"
 COPY . .
 WORKDIR "/src/WebServer"

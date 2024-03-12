@@ -6,6 +6,7 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Intellect/Intellect.csproj", "Intellect/"]
+COPY ["TicTacToeLib/TicTacToeLib.csproj", "TicTacToeLib/"]
 RUN dotnet restore "Intellect/Intellect.csproj"
 COPY . .
 WORKDIR "/src/Intellect"

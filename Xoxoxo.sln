@@ -9,7 +9,7 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Intellect", "Intellect\Intellect.csproj", "{A0EFFAEE-7E44-4609-9EB0-20A4E780D900}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicTacToeLib", "..\TicTacToeLib\TicTacToeLib.csproj", "{33C2CF86-4E1A-47BD-BE6E-F6EED14B776E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TicTacToeLib", "TicTacToeLib\TicTacToeLib.csproj", "{CB771A95-245A-414E-9BEA-402143235C9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{A0EFFAEE-7E44-4609-9EB0-20A4E780D900}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0EFFAEE-7E44-4609-9EB0-20A4E780D900}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0EFFAEE-7E44-4609-9EB0-20A4E780D900}.Release|Any CPU.Build.0 = Release|Any CPU
-		{33C2CF86-4E1A-47BD-BE6E-F6EED14B776E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{33C2CF86-4E1A-47BD-BE6E-F6EED14B776E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{33C2CF86-4E1A-47BD-BE6E-F6EED14B776E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{33C2CF86-4E1A-47BD-BE6E-F6EED14B776E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB771A95-245A-414E-9BEA-402143235C9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB771A95-245A-414E-9BEA-402143235C9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB771A95-245A-414E-9BEA-402143235C9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB771A95-245A-414E-9BEA-402143235C9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
