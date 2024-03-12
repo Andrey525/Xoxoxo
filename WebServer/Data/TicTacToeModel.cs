@@ -3,15 +3,33 @@
     public class TicTacToeModel
     {
         private int _moveCount;
-        public TicTacToeTable Table { get; private set; }
+        private TicTacToeTable _table;
         public TicTacToeState State { get; private set; }
 
-        public TicTacToeModel(TicTacToeValue firstMoveValue)
+        public TicTacToeModel(TicTacToeValue firstMoveValue, int tableSize)
         {
             _moveCount = 0;
-            Table = new TicTacToeTable();
+            _table = new TicTacToeTable(tableSize);
             State = SetWaitStateByValue(firstMoveValue);
         }
+
+        public TicTacToeValue GetValue(int row, int col)
+        {
+            return _table[row, col];
+        }
+
+        public TicTacToeMemento SaveState()
+        {
+            return new TicTacToeMemento(_moveCount, State, _table.Clone());
+        }
+
+        public void RestoreState(TicTacToeMemento memento)
+        {
+            _moveCount = memento.MoveCount;
+            State = memento.State;
+            _table = memento.Table.Clone();
+        }
+
         public void MakeMove(int row, int col, TicTacToeValue value)
         {
             if (State != TicTacToeState.WaitXMove &&
@@ -20,14 +38,14 @@
                 throw new Exception("Game was over. But you make move");
             }
 
-            if ((row < 0 || row >= TicTacToeTable.Size) ||
-                (col < 0 || col >= TicTacToeTable.Size) ||
+            if ((row < 0 || row >= _table.Size) ||
+                (col < 0 || col >= _table.Size) ||
                 !Enum.IsDefined(typeof(TicTacToeValue), value))
             {
                 throw new ArgumentException("Invalid agrument");
             }
 
-            Table[row, col] = value;
+            _table[row, col] = value;
             _moveCount++;
             UpdateGameState(row, col, value);
         }
@@ -41,7 +59,7 @@
                 return;
             }
 
-            if (_moveCount == TicTacToeTable.Size * TicTacToeTable.Size)
+            if (_moveCount == _table.Size * _table.Size)
             {
                 State = TicTacToeState.Draw;
                 return;
@@ -53,35 +71,35 @@
 
         private TicTacToeValue DetermineWinner(int row, int col, TicTacToeValue value)
         {
-            for (int i = 0; i < TicTacToeTable.Size; i++)
+            for (int i = 0; i < _table.Size; i++)
             {
-                if (Table[row, i] != value)
+                if (_table[row, i] != value)
                     break;
-                if (i == TicTacToeTable.Size - 1)
+                if (i == _table.Size - 1)
                     return value;
             }
 
-            for (int i = 0; i < TicTacToeTable.Size; i++)
+            for (int i = 0; i < _table.Size; i++)
             {
-                if (Table[i, col] != value)
+                if (_table[i, col] != value)
                     break;
-                if (i == TicTacToeTable.Size - 1)
+                if (i == _table.Size - 1)
                     return value;
             }
 
-            for (int i = 0; i < TicTacToeTable.Size; i++)
+            for (int i = 0; i < _table.Size; i++)
             {
-                if (Table[i, i] != value)
+                if (_table[i, i] != value)
                     break;
-                if (i == TicTacToeTable.Size - 1)
+                if (i == _table.Size - 1)
                     return value;
             }
 
-            for (int i = 0; i < TicTacToeTable.Size; i++)
+            for (int i = 0; i < _table.Size; i++)
             {
-                if (Table[i, (TicTacToeTable.Size - 1) - i] != value)
+                if (_table[i, (_table.Size - 1) - i] != value)
                     break;
-                if (i == TicTacToeTable.Size - 1)
+                if (i == _table.Size - 1)
                     return value;
             }
             return TicTacToeValue.No;
@@ -89,41 +107,41 @@
 
         private TicTacToeValue DetermineWinner(TicTacToeValue value)
         {
-            for (int i = 0; i < TicTacToeTable.Size; i++)
+            for (int i = 0; i < _table.Size; i++)
             {
-                for (int j = 0; j < TicTacToeTable.Size; j++)
+                for (int j = 0; j < _table.Size; j++)
                 {
-                    if (Table[i, j] != value)
+                    if (_table[i, j] != value)
                         break;
-                    if (j == TicTacToeTable.Size - 1)
+                    if (j == _table.Size - 1)
                         return value;
                 }
             }
 
-            for (int i = 0; i < TicTacToeTable.Size; i++)
+            for (int i = 0; i < _table.Size; i++)
             {
-                for (int j = 0; j < TicTacToeTable.Size; j++)
+                for (int j = 0; j < _table.Size; j++)
                 {
-                    if (Table[j, i] != value)
+                    if (_table[j, i] != value)
                         break;
-                    if (j == TicTacToeTable.Size - 1)
+                    if (j == _table.Size - 1)
                         return value;
                 }
             }
 
-            for (int i = 0; i < TicTacToeTable.Size; i++)
+            for (int i = 0; i < _table.Size; i++)
             {
-                if (Table[i, i] != value)
+                if (_table[i, i] != value)
                     break;
-                if (i == TicTacToeTable.Size - 1)
+                if (i == _table.Size - 1)
                     return value;
             }
 
-            for (int i = 0; i < TicTacToeTable.Size; i++)
+            for (int i = 0; i < _table.Size; i++)
             {
-                if (Table[i, (TicTacToeTable.Size - 1) - i] != value)
+                if (_table[i, (_table.Size - 1) - i] != value)
                     break;
-                if (i == TicTacToeTable.Size - 1)
+                if (i == _table.Size - 1)
                     return value;
             }
             return TicTacToeValue.No;
