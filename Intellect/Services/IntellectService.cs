@@ -33,8 +33,16 @@ namespace Intellectual.Services
             try
             {
                 using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-                var logger = factory.CreateLogger<Data.Intellect>();
-                var intellect = new Data.Intellect(logger, model);
+                var logger = factory.CreateLogger<Data.IntellectBase>();
+                Data.IntellectBase intellect;
+                if (model.TableSize == 3)
+                {
+                    intellect = new Data.Intellect(logger, model);
+                }
+                else
+                {
+                    intellect = new Data.IntellectStupid(logger, model);
+                }
                 coords = intellect.GetBestMoveCoord();
             }
             catch (Exception e)

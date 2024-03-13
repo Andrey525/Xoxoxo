@@ -1,16 +1,10 @@
 ﻿using TicTacToeLib;
 namespace Intellectual.Data
 {
-    public class Intellect
+    public class Intellect : IntellectBase
     {
-        private readonly ILogger<Intellect> _logger;
-        private TicTacToeModel _model;
-        public Intellect(ILogger<Intellect> logger, TicTacToeModel model)
-        {
-            _logger = logger;
-            _model = model;
-        }
-        public Tuple<int, int> GetBestMoveCoord()
+        public Intellect(ILogger<IntellectBase> logger, TicTacToeModel model) : base(logger, model) { }
+        public override Tuple<int, int> GetBestMoveCoord()
         {
             Move result;
             try
@@ -24,21 +18,12 @@ namespace Intellectual.Data
             }
             return Tuple.Create(result.Coord.Row, result.Coord.Col);
         }
-        private List<Coord> GetAvailableFields(TicTacToeModel model)
-        {
-            var availableFields = new List<Coord>();
-            for (int i = 0; i < model.TableSize; i++)
-            {
-                for (int j = 0; j < model.TableSize; j++)
-                {
-                    if (model.GetValue(i, j) == TicTacToeValue.No)
-                    {
-                        availableFields.Add(new Coord(i, j));
-                    }
-                }
-            }
-            return availableFields;
-        }
+
+        /* 
+         * При таблице больше чем 3x3 увеличивается кол-во комбинаций в разы!!!
+         * Метод нуу очень долго обрабатывает все комбинации.
+         * Нужна оптимизация.
+         */
         private Move Minimax(TicTacToeModel model)
         {
             if (model.State == TicTacToeState.XWin)
@@ -100,22 +85,6 @@ namespace Intellectual.Data
             //
 
             return bestMove;
-        }
-
-        private struct Coord
-        {
-            public Coord(int row, int col)
-            {
-                Row = row;
-                Col = col;
-            }
-            public int Row { get; set; }
-            public int Col { get; set; }
-        }
-        private struct Move
-        {
-            public Coord Coord { get; set; }
-            public int Score { get; set; }
         }
     }
 }

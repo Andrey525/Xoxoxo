@@ -1,4 +1,4 @@
-﻿@page "/tictactoe"
+﻿@page "/tictactoe2x2"
 
 @using WebServer.Data
 @using Intellectual
@@ -6,7 +6,7 @@
 
 @inject NavigationManager NavigationManager
 @inject GrpcChannel Channel
-@inject ILogger<TicTacToePage> _logger
+@inject ILogger<TicTacToePage2x2> _logger
 
 <PageTitle>TicTacToe</PageTitle>
 
@@ -51,16 +51,6 @@
             <button type="button" class="cell">@_gameModel.GetValue(0, 1)</button>
         }
       </td>
-      <td>
-        @if (_gameModel.GetValue(0, 2) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(0, 2)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(0, 2)</button>
-        }
-      </td>
     </tr>
     <tr>
       <td>
@@ -81,48 +71,6 @@
         else
         {
             <button type="button" class="cell">@_gameModel.GetValue(1, 1)</button>
-        }
-      </td>
-      <td>
-        @if (_gameModel.GetValue(1, 2) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(1, 2)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(1, 2)</button>
-        }
-      </td>
-    </tr>
-    <tr>
-      <td>
-        @if (_gameModel.GetValue(2, 0) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(2, 0)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(2, 0)</button>
-        }
-      </td>
-      <td>
-        @if (_gameModel.GetValue(2, 1) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(2, 1)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(2, 1)</button>
-        }
-      </td>
-      <td>
-        @if (_gameModel.GetValue(2, 2) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(2, 2)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(2, 2)</button>
         }
       </td>
     </tr>
@@ -153,7 +101,7 @@
     protected override void OnInitialized()
     {
         var grpcClient = new IntellectService.IntellectServiceClient(Channel);
-        _gameModel = new TicTacToeModel(TicTacToeValue.X, 3);
+        _gameModel = new TicTacToeModel(TicTacToeValue.X, 2);
         _bot = new TicTacToeBot(grpcClient);
         _playerValue = TicTacToeValue.No;
     }
