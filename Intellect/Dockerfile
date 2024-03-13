@@ -18,4 +18,6 @@ RUN dotnet publish "Intellect.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+#RUN apt-get update && apt-get install procps -y && apt-get install valgrind -y
 ENTRYPOINT ["dotnet", "Intellect.dll"]
+#ENTRYPOINT ["valgrind", "--leak-check=full", "--show-leak-kinds=all", "--track-origins=yes", "dotnet", "Intellect.dll"]

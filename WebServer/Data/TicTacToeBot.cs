@@ -5,13 +5,13 @@ namespace WebServer.Data
 {
     public class TicTacToeBot
     {
+        private IntellectService.IntellectServiceClient _client;
 
         public TicTacToeBot(IntellectService.IntellectServiceClient client)
         {
-            Client = client;
+            _client = client;
         }
 
-        private IntellectService.IntellectServiceClient Client { get; set; }
         public async Task<Tuple<int, int>> ThinkAboutHowToMove(TicTacToeMemento memento)
         {
             var tableState = new TableState();
@@ -25,7 +25,7 @@ namespace WebServer.Data
             tableState.Size = memento.Table.Size;
             tableState.MoveCount = memento.MoveCount;
             tableState.State = (int)memento.State;
-            var reply = await Client.CallToFriendAsync(tableState);
+            var reply = await _client.CallToFriendAsync(tableState);
 
             if (reply.Status == StatusCode.Error)
             {

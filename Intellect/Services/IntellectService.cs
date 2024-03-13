@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Intellectual.Services.Helpers;
 using TicTacToeLib;
 
 namespace Intellectual.Services
@@ -21,19 +22,8 @@ namespace Intellectual.Services
                 return Task.FromResult(new CoordReply { Status = StatusCode.Error });
             }
 
-            /*
-             * Need normal Converter!!!
-             */
-            //
             var table = new TicTacToeTable(request.Size);
-            for (int i = 0; i < table.Size; i++)
-            {
-                for (int j = 0; j < request.Size; j++)
-                {
-                    table[i, j] = (TicTacToeValue)request.Values[i * table.Size + j];
-                }
-            }
-            //
+            table.Fill(request.Values);
 
             TicTacToeMemento memento = new TicTacToeMemento(request.MoveCount, (TicTacToeState)request.State, table);
 
