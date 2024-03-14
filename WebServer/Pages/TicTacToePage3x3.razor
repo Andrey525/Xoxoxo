@@ -5,207 +5,67 @@
 @using TicTacToeLib
 
 @inject NavigationManager NavigationManager
-@inject GrpcChannel Channel
-@inject ILogger<TicTacToePage3x3> _logger
 
 <PageTitle>TicTacToe</PageTitle>
 
-<h3 class=""></h3>
- 
 <div id="game-screen" class="center">
   <h2 align="center">TicTacToe Game</h2>
-  @if (_playerValue == TicTacToeValue.No)
-    {
+  @if (!Game.IsStarted)
+  {
         <table class="center">
             <tr>
         <td>
-            <button type="button" id="choose-value" @onclick="() => { _playerValue = TicTacToeValue.X; _botValue = TicTacToeValue.O; }">Choose X</button>
+            <button type="button" id="choose-value" @onclick="async () => { Player.Value = TicTacToeValue.X; Bot.Value = TicTacToeValue.O; await Game.Init(LineSize); }">Choose X</button>
         </td>
         <td>
-            <button type="button" id="choose-value" @onclick="async () => { _playerValue = TicTacToeValue.O; _botValue = TicTacToeValue.X; await BotMove();}">Choose O</button>
+            <button type="button" id="choose-value"  @onclick="async () => { Player.Value = TicTacToeValue.O; Bot.Value = TicTacToeValue.X; await Game.Init(LineSize); }">Choose O</button>
         </td>
     </tr>
     </table>
   }
   else
   {
-     <table class="center">
-    <tr>
-      <td>
-        @if (_gameModel.GetValue(0, 0) == TicTacToeValue.No)
+    <table class="center">
+        @for (int i = 0; i < LineSize; i++)
         {
-            <button type="button" class="cell" @onclick="() => Handle(0, 0)"></button>
+            <tr>
+             @for (int j = 0; j < LineSize; j++)
+             {
+                <td>
+                  @if (Game.GetValue(i, j) == TicTacToeValue.No)
+                  {
+                        int row = i, col = j;
+                        <button type="button" class="cell" @onclick="() => Player.MakeMove(row, col)"></button>
+                  }
+                  else
+                  {
+                        <button type="button" class="cell">@Game.GetValue(i, j)</button>
+                  }
+                </td>
+             }
+            </tr>
         }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(0, 0)</button>
-        }
-      </td>
-      <td>
-        @if (_gameModel.GetValue(0, 1) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(0, 1)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(0, 1)</button>
-        }
-      </td>
-      <td>
-        @if (_gameModel.GetValue(0, 2) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(0, 2)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(0, 2)</button>
-        }
-      </td>
-    </tr>
-    <tr>
-      <td>
-        @if (_gameModel.GetValue(1, 0) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(1, 0)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(1, 0)</button>
-        }
-      </td>
-      <td>
-        @if (_gameModel.GetValue(1, 1) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(1, 1)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(1, 1)</button>
-        }
-      </td>
-      <td>
-        @if (_gameModel.GetValue(1, 2) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(1, 2)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(1, 2)</button>
-        }
-      </td>
-    </tr>
-    <tr>
-      <td>
-        @if (_gameModel.GetValue(2, 0) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(2, 0)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(2, 0)</button>
-        }
-      </td>
-      <td>
-        @if (_gameModel.GetValue(2, 1) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(2, 1)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(2, 1)</button>
-        }
-      </td>
-      <td>
-        @if (_gameModel.GetValue(2, 2) == TicTacToeValue.No)
-        {
-            <button type="button" class="cell" @onclick="() => Handle(2, 2)"></button>
-        }
-        else
-        {
-            <button type="button" class="cell">@_gameModel.GetValue(2, 2)</button>
-        }
-      </td>
-    </tr>
   </table>
   <button type="button" id="restart" @onclick=@ReloadPage>Restart</button> 
   }
-
 </div>
 
-@if (_gameModel.State != TicTacToeState.WaitXMove &&
-     _gameModel.State != TicTacToeState.WaitOMove)
-{
-    <h2 align="center">Game over! @_gameModel.State</h2>   
-}
-
 @code {
+    [Inject] Game Game { get; set; }
+    [Inject] Player Player { get; set; }
+    [Inject] Bot Bot { get; set; }
+    const int LineSize = 3;
 
-    private TicTacToeValue _playerValue;
-    private TicTacToeValue _botValue;
-    private TicTacToeModel _gameModel;
-    private TicTacToeBot _bot;
+    protected override void OnInitialized()
+    {
+        Game.BotMove += Bot.MakeMove;
+        Bot.Game = Game;
+        Player.Game = Game;
+    }
 
     private void ReloadPage()
     {
         NavigationManager.NavigateTo(NavigationManager.Uri, true);
     }
 
-    protected override void OnInitialized()
-    {
-        var grpcClient = new IntellectService.IntellectServiceClient(Channel);
-        _gameModel = new TicTacToeModel(TicTacToeValue.X, 3);
-        _bot = new TicTacToeBot(grpcClient);
-        _playerValue = TicTacToeValue.No;
-    }
-
-    private async Task Handle(int row, int col)
-    {
-        _logger.LogInformation($"Filed {row}:{col} clicked");
-        if (_gameModel.GetValue(row, col) != TicTacToeValue.No)
-        {
-            _logger.LogInformation($"Filed busy");
-            return;
-        }
-
-        _logger.LogInformation(_gameModel.State.ToString());
-        if (_playerValue == TicTacToeValue.X && _gameModel.State == TicTacToeState.WaitXMove ||
-            _playerValue == TicTacToeValue.O && _gameModel.State == TicTacToeState.WaitOMove)
-        {
-            try
-            {
-                _gameModel.MakeMove(row, col, _playerValue);
-                _logger.LogInformation(_gameModel.State.ToString());
-
-                if (_playerValue == TicTacToeValue.X && _gameModel.State != TicTacToeState.WaitOMove ||
-                    _playerValue == TicTacToeValue.O && _gameModel.State != TicTacToeState.WaitXMove)
-                    return;
-
-                await BotMove();
-                StateHasChanged();
-                if (_botValue == TicTacToeValue.O && _gameModel.State != TicTacToeState.WaitXMove ||
-                    _botValue == TicTacToeValue.X && _gameModel.State != TicTacToeState.WaitOMove)
-                    return;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.Message);
-            }
-        }
-    }
-
-    private async Task BotMove()
-    {
-         Tuple<int, int> coord;
-         try
-         {
-             coord = await _bot.ThinkAboutHowToMove(_gameModel.SaveState());
-            _logger.LogInformation(coord.Item1.ToString() + coord.Item2.ToString());
-            _gameModel.MakeMove(coord.Item1, coord.Item2, _botValue);
-         }
-         catch (Exception e)
-         {
-             _logger.LogError(e.Message);
-             return;
-         }
-    }
 }
