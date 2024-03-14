@@ -5,7 +5,13 @@ using WebServer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-using var channel = GrpcChannel.ForAddress("http://host.docker.internal:5291");
+string? pathToIntellectService = Environment.GetEnvironmentVariable("INTELLECT_URLS");
+if (pathToIntellectService == null)
+{
+    Console.WriteLine("Empty env variable");
+    return;
+}
+using var channel = GrpcChannel.ForAddress(pathToIntellectService);
 
 var grpcClient = new IntellectService.IntellectServiceClient(channel);
 

@@ -11,6 +11,9 @@ services:
     ports:
       - "5175:5175"
       - "7175:7175"
+    environment:
+      - INTELLECT_URLS=http://intellect:5291
+
 
   intellect:
     image: ${DOCKER_REGISTRY-}intellect

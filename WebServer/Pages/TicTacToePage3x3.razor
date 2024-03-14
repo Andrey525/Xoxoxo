@@ -26,10 +26,10 @@
   else
   {
     <table class="center">
-        @for (int i = 0; i < LineSize; i++)
+        @for (int i = 0; i < Game.LineSize; i++)
         {
             <tr>
-             @for (int j = 0; j < LineSize; j++)
+             @for (int j = 0; j < Game.LineSize; j++)
              {
                 <td>
                   @if (Game.GetValue(i, j) == TicTacToeValue.No)
@@ -48,6 +48,11 @@
   </table>
   <button type="button" id="restart" @onclick=@ReloadPage>Restart</button> 
   }
+  @if (Game.IsStarted && Game._state.ProgressState != TicTacToeState.WaitOMove && Game._state.ProgressState != TicTacToeState.WaitXMove)
+    {
+        <h2 align="center">@Game._state.ProgressState</h2>
+    }
+    
 </div>
 
 @code {
@@ -67,5 +72,4 @@
     {
         NavigationManager.NavigateTo(NavigationManager.Uri, true);
     }
-
 }

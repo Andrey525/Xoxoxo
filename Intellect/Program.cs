@@ -1,3 +1,6 @@
+using Intellectual.Data;
+using TicTacToeLib;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Additional configuration is required to successfully run gRPC on macOS.
@@ -6,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddGrpc();
 builder.Services.AddLogging();
+builder.Services.AddScoped<Game>();
+builder.Services.AddTransient<Intellect>();
+builder.Services.AddTransient<IntellectStupid>();
 
 var app = builder.Build();
 

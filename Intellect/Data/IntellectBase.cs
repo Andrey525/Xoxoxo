@@ -4,22 +4,22 @@ namespace Intellectual.Data
     public abstract class IntellectBase
     {
         protected readonly ILogger<IntellectBase> _logger;
-        protected TicTacToeModel _model;
-        public IntellectBase(ILogger<IntellectBase> logger, TicTacToeModel model)
+        protected Game _game;
+        public IntellectBase(ILogger<IntellectBase> logger, Game game)
         {
             _logger = logger;
-            _model = model;
+            _game = game;
         }
 
-        public abstract Tuple<int, int> GetBestMoveCoord();
-        protected List<Coord> GetAvailableFields(TicTacToeModel model)
+        public abstract Task<Tuple<int, int>> GetBestMoveCoord();
+        protected List<Coord> GetAvailableFields()
         {
             var availableFields = new List<Coord>();
-            for (int i = 0; i < model.TableSize; i++)
+            for (int i = 0; i < _game.LineSize; i++)
             {
-                for (int j = 0; j < model.TableSize; j++)
+                for (int j = 0; j < _game.LineSize; j++)
                 {
-                    if (model.GetValue(i, j) == TicTacToeValue.No)
+                    if (_game.GetValue(i, j) == TicTacToeValue.No)
                     {
                         availableFields.Add(new Coord(i, j));
                     }

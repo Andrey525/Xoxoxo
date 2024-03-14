@@ -29,5 +29,20 @@
                 }
             }
         }
+
+        public State(int lineSize, int currentMoveCount, TicTacToeState progressState, TicTacToeValue[,] values)
+        {
+            LineSize = lineSize;
+            CurrentMoveCount = currentMoveCount;
+            ProgressState = progressState;
+            Values = new TicTacToeValue[LineSize, LineSize];
+            for (int i = 0; i < LineSize; i++)
+            {
+                for (int j = 0; j < LineSize; j++)
+                {
+                    Values[i, j] = values[i, j];
+                }
+            }
+        }
     }
 }

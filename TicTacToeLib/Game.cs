@@ -2,7 +2,9 @@
 {
     public class Game
     {
-        internal State _state;
+        /*internal State _state;*/
+        public State _state;
+        public int LineSize => _state.LineSize;
 
         public event Func<object, EventArgs, Task> BotMove;
 
@@ -27,7 +29,6 @@
 
         public async Task FillCell(int row, int col, TicTacToeValue value)
         {
-            Console.WriteLine($"{row}:{col} = {value}");
             if (_state.ProgressState != (TicTacToeState)value)
             {
                 Console.WriteLine($"Can't do it");
@@ -165,6 +166,11 @@
             {
                 throw new Exception(e.Message);
             }
+        }
+
+        public State SaveState()
+        {
+            return new State(_state);
         }
 
         private void ValidateState()

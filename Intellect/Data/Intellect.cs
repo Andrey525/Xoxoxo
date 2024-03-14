@@ -3,13 +3,13 @@ namespace Intellectual.Data
 {
     public class Intellect : IntellectBase
     {
-        public Intellect(ILogger<IntellectBase> logger, TicTacToeModel model) : base(logger, model) { }
-        public override Tuple<int, int> GetBestMoveCoord()
+        public Intellect(ILogger<IntellectBase> logger, Game game) : base(logger, game) { }
+        public override async Task<Tuple<int, int>> GetBestMoveCoord()
         {
             Move result;
             try
             {
-                result = Minimax(_model);
+                result = await Minimax();
             }
             catch (Exception e)
             {
@@ -24,36 +24,36 @@ namespace Intellectual.Data
          * Метод нуу очень долго обрабатывает все комбинации.
          * Нужна оптимизация.
          */
-        private Move Minimax(TicTacToeModel model)
+        private async Task<Move> Minimax()
         {
-            if (model.State == TicTacToeState.XWin)
+            if (_game._state.ProgressState == TicTacToeState.XWin)
             {
                 return new Move { Score = -10 };
             }
-            else if (model.State == TicTacToeState.OWin)
+            else if (_game._state.ProgressState == TicTacToeState.OWin)
             {
                 return new Move { Score = 10 };
             }
-            else if (model.State == TicTacToeState.Draw)
+            else if (_game._state.ProgressState == TicTacToeState.Draw)
             {
                 return new Move { Score = 0 };
             }
 
-            var availableFields = GetAvailableFields(model);
+            var availableFields = GetAvailableFields();
 
             var moves = new List<Move>();
 
-            TicTacToeState state = TicTacToeState.Invalid;
+            TicTacToeState progressState = TicTacToeState.Invalid;
             for (int i = 0; i < availableFields.Count; i++)
             {
-                TicTacToeMemento memento = model.SaveState();
-                state = memento.State;
+                State state = _game.SaveState();
+                progressState = state.ProgressState;
 
-                model.MakeMove(availableFields[i].Row, availableFields[i].Col, (TicTacToeValue)model.State);
+                await _game.FillCell(availableFields[i].Row, availableFields[i].Col, (TicTacToeValue)state.ProgressState);
 
-                var result = Minimax(model);
+                var result = await Minimax();
 
-                model.RestoreState(memento);
+                _game.RestoreState(state);
 
                 moves.Add(new Move()
                 {
@@ -67,7 +67,7 @@ namespace Intellectual.Data
             }
 
             int bestScore;
-            if (state == TicTacToeState.WaitOMove)
+            if (progressState == TicTacToeState.WaitOMove)
             {
                 bestScore = moves.Select(t => t.Score).Max();
             }
@@ -77,7 +77,7 @@ namespace Intellectual.Data
             }
 
             // Some randomization
-            var indexes = moves.Select(t => t).Where(t => t.Score == bestScore);
+            var indexes = moves.Where(t => t.Score == bestScore);
 
             Random random = new Random();
             var randIndex = random.Next(0, indexes.ToArray().Length);
