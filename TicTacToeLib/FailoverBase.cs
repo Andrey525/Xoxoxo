@@ -8,6 +8,6 @@ namespace TicTacToeLib
         {
             _helpers = helpers;
         }
-        public abstract IHelper ChangeHelper(Type replacemenеType);
+        public abstract IHelper ReplaceHelper(Type replacementType);
     }
 }

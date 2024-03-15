@@ -6,7 +6,7 @@ namespace WebServer.Data
         public Failover(IEnumerable<IHelper> helpers) : base(helpers)
         {
         }
-        public override IHelper ChangeHelper(Type replacemenеType)
+        public override IHelper ReplaceHelper(Type replacemenеType)
         {
             foreach (var helper in _helpers)
             {

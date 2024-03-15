@@ -51,7 +51,7 @@
                 }
                 catch (Exception)
                 {
-                    Helper = _failover.ChangeHelper(Helper.GetType());
+                    Helper = _failover.ReplaceHelper(Helper.GetType());
                     cellCoordinates = await GetHelp();
                 }
 
