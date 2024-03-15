@@ -3,6 +3,7 @@
 @using WebServer.Data
 @using Intellectual
 @using TicTacToeLib
+@implements IDisposable
 
 @inject NavigationManager NavigationManager
 
@@ -48,9 +49,9 @@
   </table>
   <button type="button" id="restart" @onclick=@ReloadPage>Restart</button> 
   }
-  @if (Game.IsStarted && Game._state.ProgressState != TicTacToeState.WaitOMove && Game._state.ProgressState != TicTacToeState.WaitXMove)
+  @if (Game.IsOvered)
     {
-        <h2 align="center">@Game._state.ProgressState</h2>
+        <h2 align="center">Winner: @Game.Winner</h2>
     }
     
 </div>
@@ -66,10 +67,17 @@
         Game.BotMove += Bot.MakeMove;
         Bot.Game = Game;
         Player.Game = Game;
+
+        Bot.ChangeHelper(typeof(RemoteHelper));
     }
 
     private void ReloadPage()
     {
         NavigationManager.NavigateTo(NavigationManager.Uri, true);
+    }
+
+    public void Dispose()
+    {
+        Game.BotMove -= Bot.MakeMove;
     }
 }

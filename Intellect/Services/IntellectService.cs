@@ -7,67 +7,78 @@ namespace Intellectual.Services
     public class Intellect : IntellectService.IntellectServiceBase
     {
         private readonly ILogger<Intellect> _logger;
-        Game Game { get; set; }
-        Data.Intellect DataIntellect { get; set; }
-        Data.IntellectStupid DataIntellectStupid { get; set; }
+        private readonly Game _game;
+        private readonly IEnumerable<Data.IntellectBase> _intellects;
 
-        public Intellect(ILogger<Intellect> logger, Game game, Data.Intellect intellect, Data.IntellectStupid intellectStupid)
+        public Intellect(ILogger<Intellect> logger, Game game, IEnumerable<Data.IntellectBase> intellects)
         {
             _logger = logger;
+            _game = game;
+            _intellects = intellects;
+
             _logger.LogInformation($"Intellect: new creation");
-            Game = game;
-            DataIntellect = intellect;
-            DataIntellectStupid = intellectStupid;
         }
 
-        public override async Task<CoordReply> CallToFriend(TableState request, ServerCallContext context)
+        public override async Task<CoordinatesReply> GetMoveCoordinates(GameState request, ServerCallContext context)
         {
             if (request.Values.Count != request.Size * request.Size)
             {
-                _logger.LogError($"CallToFriend: Wrong count elems");
-                return (new CoordReply { Status = StatusCode.Error });
+                _logger.LogError($"GetMoveCoordinates: Wrong count elems");
+                return new CoordinatesReply
+                {
+                    Status = CoordinatesReply.Types.StatusCode.Error,
+                    ErrorReason = "Wrong count elems"
+                };
             }
 
-            var values = new TicTacToeValue[request.Size, request.Size];
-            ValueListConverter.Fill(values, request.Values);
-
-            State state = new State(request.Size, request.MoveCount, (TicTacToeState)request.State, values);
-            Game.Init(request.Size);
-            Game.RestoreState(state);
-
-            Tuple<int, int> coords;
+            Point coords;
             try
             {
-                using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-                var logger = factory.CreateLogger<Data.IntellectBase>();
-                Data.IntellectBase intellect;
-                if (request.Size == 3)
+                GetMoveCoordinatesRequestDataConverter.RestoreGameDataFromRequest(_game, request);
+
+                Data.IntellectBase? intellect = null;
+                foreach (var elem in _intellects)
                 {
-                    intellect = DataIntellect;
+                    if (request.Size == 3 && elem is Data.Intellect)
+                    {
+                        intellect = elem;
+                        break;
+                    }
+                    else if (elem is Data.IntellectStupid)
+                    {
+                        intellect = elem;
+                        break;
+                    }
                 }
-                else
+
+                if (intellect == null)
                 {
-                    intellect = DataIntellectStupid;
+                    throw new Exception("Needed intellect object not found");
                 }
+
                 coords = await intellect.GetBestMoveCoord();
             }
             catch (Exception e)
             {
-                _logger.LogError(e.Message);
-                return (new CoordReply { Status = StatusCode.Error });
+                _logger.LogError($"GetMoveCoordinates: {e.Message}");
+                return new CoordinatesReply
+                {
+                    Status = CoordinatesReply.Types.StatusCode.Error,
+                    ErrorReason = e.Message
+                };
             }
 
-            _logger.LogInformation($"CallToFriend: row:{coords.Item1}; col:{coords.Item2};");
+            _logger.LogInformation($"GetMoveCoordinates: row:{coords.X}; col:{coords.Y};");
 
-            return (new CoordReply
+            return new CoordinatesReply
             {
-                Status = StatusCode.Success,
-                CellCoord = new Coord
+                Status = CoordinatesReply.Types.StatusCode.Success,
+                CellCoordinates = new Coordinates
                 {
-                    Row = coords.Item1,
-                    Col = coords.Item2
+                    Row = coords.X,
+                    Col = coords.Y
                 }
-            });
+            };
         }
     }
 }

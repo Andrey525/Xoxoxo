@@ -10,8 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddLogging();
 builder.Services.AddScoped<Game>();
-builder.Services.AddTransient<Intellect>();
-builder.Services.AddTransient<IntellectStupid>();
+builder.Services.AddTransient<IntellectBase, Intellectual.Data.Intellect>();
+builder.Services.AddTransient<IntellectBase, Intellectual.Data.IntellectStupid>();
 
 var app = builder.Build();
 

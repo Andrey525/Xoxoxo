@@ -5,28 +5,29 @@ option csharp_namespace = "Intellectual";
 package intellect;
 
 service IntellectService {
-	rpc CallToFriend (TableState) returns (CoordReply);
+  rpc GetMoveCoordinates (GameState) returns (CoordinatesReply);
 }
 
-enum StatusCode
-{
-	SUCCESS = 0;
-	ERROR = 1;
+message GameState {
+  repeated int32 values = 1;
+  int32 size = 2;
+  int32 state = 3;
+  int32 move_count = 4;
 }
 
-message TableState {
-	repeated int32 values = 1;
-	int32 size = 2;
-	int32 state = 3;
-	int32 move_count = 4;
+message Coordinates {
+  int32 row = 1;
+  int32 col = 2;
 }
 
-message Coord {
-	int32 row = 1;
-	int32 col = 2;
-}
+message CoordinatesReply {
+  StatusCode status = 1;
+  Coordinates cell_coordinates = 2;
+  string error_reason = 3;
 
-message CoordReply {
-	StatusCode status = 1;
-	Coord cell_coord = 2;
+  enum StatusCode
+  {
+    SUCCESS = 0;
+    ERROR = 1;
+  }
 }

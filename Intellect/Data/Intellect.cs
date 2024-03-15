@@ -1,10 +1,11 @@
-﻿using TicTacToeLib;
+﻿using Intellect.Data;
+using TicTacToeLib;
 namespace Intellectual.Data
 {
     public class Intellect : IntellectBase
     {
         public Intellect(ILogger<IntellectBase> logger, Game game) : base(logger, game) { }
-        public override async Task<Tuple<int, int>> GetBestMoveCoord()
+        public override async Task<Point> GetBestMoveCoord()
         {
             Move result;
             try
@@ -16,7 +17,7 @@ namespace Intellectual.Data
                 _logger.LogError($"GetBestMoveCoord: {e.Message}");
                 throw new Exception(e.Message);
             }
-            return Tuple.Create(result.Coord.Row, result.Coord.Col);
+            return new Point(result.Coord.X, result.Coord.Y);
         }
 
         /* 
@@ -26,17 +27,19 @@ namespace Intellectual.Data
          */
         private async Task<Move> Minimax()
         {
-            if (_game._state.ProgressState == TicTacToeState.XWin)
+            if (_game.IsOvered)
             {
-                return new Move { Score = -10 };
-            }
-            else if (_game._state.ProgressState == TicTacToeState.OWin)
-            {
-                return new Move { Score = 10 };
-            }
-            else if (_game._state.ProgressState == TicTacToeState.Draw)
-            {
-                return new Move { Score = 0 };
+                switch (_game.Winner)
+                {
+                    case TicTacToeValue.X:
+                        return new Move { Score = -10 };
+                    case TicTacToeValue.O:
+                        return new Move { Score = 10 };
+                    case TicTacToeValue.No:
+                        return new Move { Score = 0 };
+                    default:
+                        break;
+                }
             }
 
             var availableFields = GetAvailableFields();
@@ -49,7 +52,7 @@ namespace Intellectual.Data
                 State state = _game.SaveState();
                 progressState = state.ProgressState;
 
-                await _game.FillCell(availableFields[i].Row, availableFields[i].Col, (TicTacToeValue)state.ProgressState);
+                await _game.FillCell(availableFields[i].X, availableFields[i].Y, (TicTacToeValue)state.ProgressState);
 
                 var result = await Minimax();
 
@@ -57,11 +60,7 @@ namespace Intellectual.Data
 
                 moves.Add(new Move()
                 {
-                    Coord = new Coord()
-                    {
-                        Col = availableFields[i].Col,
-                        Row = availableFields[i].Row
-                    },
+                    Coord = new Point(availableFields[i].X, availableFields[i].Y),
                     Score = result.Score
                 });
             }
@@ -78,9 +77,7 @@ namespace Intellectual.Data
 
             // Some randomization
             var indexes = moves.Where(t => t.Score == bestScore);
-
-            Random random = new Random();
-            var randIndex = random.Next(0, indexes.ToArray().Length);
+            var randIndex = _random.Next(0, indexes.ToArray().Length);
             var bestMove = indexes.ToArray()[randIndex];
             //
 

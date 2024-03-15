@@ -2,20 +2,40 @@
 {
     public class Game
     {
-        /*internal State _state;*/
-        public State _state;
+        internal State _state = null;
         public int LineSize => _state.LineSize;
 
         public event Func<object, EventArgs, Task> BotMove;
 
-        public bool IsStarted { get; private set; } = false;
+        public bool IsStarted
+        {
+            get
+            {
+                return _state != null;
+            }
+        }
+        public bool IsOvered
+        {
+            get
+            {
+                if (!IsStarted)
+                    return false;
+
+                if (_state.ProgressState != TicTacToeState.WaitXMove &&
+                    _state.ProgressState != TicTacToeState.WaitOMove)
+                {
+                    return true;
+                }
+                else
+                    return false;
+            }
+        }
 
         public async Task Init(int lineSize)
         {
             if (!IsStarted)
             {
                 _state = new State(lineSize);
-                IsStarted = true;
                 if (BotMove != null)
                 {
                     await BotMove.Invoke(this, EventArgs.Empty);
@@ -25,6 +45,22 @@
         public TicTacToeValue GetValue(int row, int col)
         {
             return _state.Values[row, col];
+        }
+
+        public TicTacToeValue Winner
+        {
+            get
+            {
+                switch (_state.ProgressState)
+                {
+                    case TicTacToeState.XWin:
+                        return TicTacToeValue.X;
+                    case TicTacToeState.OWin:
+                        return TicTacToeValue.O;
+                    default:
+                        return TicTacToeValue.No;
+                }
+            }
         }
 
         public async Task FillCell(int row, int col, TicTacToeValue value)
