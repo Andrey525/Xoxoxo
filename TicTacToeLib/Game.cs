@@ -31,6 +31,25 @@
             }
         }
 
+        public TicTacToeValue WhoseMove
+        {
+            get
+            {
+                if (!IsStarted || IsOvered)
+                    return TicTacToeValue.No;
+
+                switch (_state.ProgressState)
+                {
+                    case TicTacToeState.WaitXMove:
+                        return TicTacToeValue.X;
+                    case TicTacToeState.WaitOMove:
+                        return TicTacToeValue.O;
+                    default:
+                        return TicTacToeValue.No;
+                }
+            }
+        }
+
         public async Task Init(int lineSize)
         {
             if (!IsStarted)
