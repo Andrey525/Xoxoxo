@@ -90,10 +90,17 @@
                 return;
 
             }
+
             if ((row < 0 || row >= _state.LineSize) ||
                 (col < 0 || col >= _state.LineSize))
             {
                 Console.WriteLine("Invalid agrument");
+                return;
+            }
+
+            if (_state.Values[row, col] != TicTacToeValue.No)
+            {
+                Console.WriteLine("Cell is busy");
                 return;
             }
 
