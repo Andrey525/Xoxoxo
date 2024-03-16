@@ -6,7 +6,6 @@
         private readonly FailoverBase _failover;
         private IHelper Helper { get; set; }
         public Game Game { get; set; }
-        public TicTacToeValue Value { get; set; }
 
         public Bot(IEnumerable<IHelper> helpers, FailoverBase failoverBase)
         {
@@ -39,28 +38,26 @@
             return await Helper.GetHelp(new State(Game._state));
         }
 
-        public async Task MakeMove(object sender, EventArgs e)
+        public async Task<Point> MakeMove()
         {
-            if ((TicTacToeValue)Game._state.ProgressState == Value)
+            Point? cellCoordinates = null;
+
+            try
             {
-                Point? cellCoordinates = null;
-
-                try
-                {
-                    cellCoordinates = await GetHelp();
-                }
-                catch (Exception)
-                {
-                    Helper = _failover.ReplaceHelper(Helper.GetType());
-                    cellCoordinates = await GetHelp();
-                }
-
-                if (cellCoordinates == null)
-                {
-                    throw new NullReferenceException("cellCoordinates == null");
-                }
-                await Game.FillCell((int)cellCoordinates?.X, (int)cellCoordinates?.Y, Value);
+                cellCoordinates = await GetHelp();
             }
+            catch (Exception)
+            {
+                Helper = _failover.ReplaceHelper(Helper.GetType());
+                cellCoordinates = await GetHelp();
+            }
+
+            if (cellCoordinates == null)
+            {
+                throw new NullReferenceException("cellCoordinates == null");
+            }
+
+            return new Point((int)cellCoordinates?.X, (int)cellCoordinates?.Y);
         }
     }
 }

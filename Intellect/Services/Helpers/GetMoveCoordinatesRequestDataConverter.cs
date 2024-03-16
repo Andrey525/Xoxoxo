@@ -17,7 +17,7 @@ namespace Intellectual.Services.Helpers
 
             State state = new State(request.Size, request.MoveCount, (TicTacToeState)request.State, values);
 
-            await game.Init(request.Size);
+            game.Init(request.Size);
             game.RestoreState(state);
         }
     }

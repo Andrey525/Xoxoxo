@@ -20,11 +20,6 @@ namespace Intellectual.Data
             return new Point(result.Coord.X, result.Coord.Y);
         }
 
-        /* 
-         * При таблице больше чем 3x3 увеличивается кол-во комбинаций в разы!!!
-         * Метод нуу очень долго обрабатывает все комбинации.
-         * Нужна оптимизация.
-         */
         private async Task<Move> Minimax()
         {
             if (_game.IsOvered)
@@ -52,7 +47,7 @@ namespace Intellectual.Data
                 State state = _game.SaveState();
                 progressState = state.ProgressState;
 
-                await _game.FillCell(availableFields[i].X, availableFields[i].Y, (TicTacToeValue)state.ProgressState);
+                _game.UpdateGameState(availableFields[i].X, availableFields[i].Y, (TicTacToeValue)state.ProgressState);
 
                 var result = await Minimax();
 

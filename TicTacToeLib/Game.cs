@@ -1,11 +1,25 @@
-﻿namespace TicTacToeLib
+﻿using Microsoft.Extensions.Logging;
+
+namespace TicTacToeLib
 {
-    public class Game
+    public class Game : IDisposable
     {
+        private readonly ILogger<Game> _logger;
         internal State _state = null;
         public int LineSize => _state.LineSize;
 
-        public event Func<object, EventArgs, Task> BotMove;
+        public event MoveCallback XMove;
+        public event MoveCallback OMove;
+        public delegate Task<Point> MoveCallback();
+
+        public event UpdateComponentCallback GameOver;
+        public event UpdateComponentCallback GameStateUpdate;
+        public delegate void UpdateComponentCallback();
+
+        public Game(ILogger<Game> logger)
+        {
+            _logger = logger;
+        }
 
         public bool IsStarted
         {
@@ -31,34 +45,11 @@
             }
         }
 
-        public TicTacToeValue WhoseMove
-        {
-            get
-            {
-                if (!IsStarted || IsOvered)
-                    return TicTacToeValue.No;
-
-                switch (_state.ProgressState)
-                {
-                    case TicTacToeState.WaitXMove:
-                        return TicTacToeValue.X;
-                    case TicTacToeState.WaitOMove:
-                        return TicTacToeValue.O;
-                    default:
-                        return TicTacToeValue.No;
-                }
-            }
-        }
-
-        public async Task Init(int lineSize)
+        public void Init(int lineSize)
         {
             if (!IsStarted)
             {
                 _state = new State(lineSize);
-                if (BotMove != null)
-                {
-                    await BotMove.Invoke(this, EventArgs.Empty);
-                }
             }
         }
         public TicTacToeValue GetValue(int row, int col)
@@ -82,32 +73,49 @@
             }
         }
 
-        public async Task FillCell(int row, int col, TicTacToeValue value)
+        public async Task Run()
+        {
+            while (!IsOvered)
+            {
+                TicTacToeValue moveValue = (_state.ProgressState == TicTacToeState.WaitXMove) ? TicTacToeValue.X : TicTacToeValue.O;
+
+                Point coordinates = await ((moveValue == TicTacToeValue.X) ? XMove.Invoke() : OMove.Invoke());
+
+                bool isValidMove = ValidateMove(coordinates.X, coordinates.Y, moveValue);
+
+                if (isValidMove)
+                {
+                    UpdateGameState(coordinates.X, coordinates.Y, moveValue);
+                }
+            }
+            GameOver?.Invoke();
+        }
+
+        private bool ValidateMove(int row, int col, TicTacToeValue value)
         {
             if (_state.ProgressState != (TicTacToeState)value)
             {
-                Console.WriteLine($"Can't do it");
-                return;
-
+                _logger.LogWarning("Progress State does not imply this meaning at the moment");
+                return false;
             }
 
             if ((row < 0 || row >= _state.LineSize) ||
                 (col < 0 || col >= _state.LineSize))
             {
-                Console.WriteLine("Invalid agrument");
-                return;
+                _logger.LogError("Invalid agrument");
+                return false;
             }
 
             if (_state.Values[row, col] != TicTacToeValue.No)
             {
-                Console.WriteLine("Cell is busy");
-                return;
+                _logger.LogError($"Cell {row}:{col} is busy (value:{_state.Values[row, col]})");
+                return false;
             }
 
-            await UpdateGameState(row, col, value);
+            return true;
         }
 
-        private async Task UpdateGameState(int row, int col, TicTacToeValue value)
+        public void UpdateGameState(int row, int col, TicTacToeValue value)
         {
             _state.Values[row, col] = value;
             _state.CurrentMoveCount++;
@@ -116,22 +124,20 @@
             {
                 _state.ProgressState = (winner == TicTacToeValue.O) ? TicTacToeState.OWin
                                                      : TicTacToeState.XWin;
+                GameStateUpdate?.Invoke();
                 return;
             }
 
             if (_state.CurrentMoveCount == _state.TotalCellCount)
             {
                 _state.ProgressState = TicTacToeState.Draw;
+                GameStateUpdate?.Invoke();
                 return;
             }
 
             _state.ProgressState = (_state.ProgressState == TicTacToeState.WaitXMove) ? TicTacToeState.WaitOMove
                                                                                       : TicTacToeState.WaitXMove;
-            // уведоми бота, чтобы тот походил
-            if (BotMove != null)
-            {
-                await BotMove.Invoke(this, EventArgs.Empty);
-            }
+            GameStateUpdate?.Invoke();
         }
 
         private TicTacToeValue DetermineWinner(int row, int col, TicTacToeValue value)
@@ -216,8 +222,8 @@
         {
             if (_state.LineSize != state.LineSize)
             {
-                Console.WriteLine($"Can't restore state, because {_state.LineSize} != {state.LineSize}");
-                return;
+                _logger.LogError($"Can't restore state, because line sizes not equal ({_state.LineSize} != {state.LineSize})");
+                throw new Exception("Not supported input state");
             }
             _state = new State(state);
             try
@@ -273,6 +279,15 @@
             {
                 throw new Exception("Already have winner. Or may be invalid State");
             }
+        }
+
+        public void Dispose()
+        {
+            Console.WriteLine("Dispose Game");
+            XMove = null;
+            OMove = null;
+            GameOver = null;
+            GameStateUpdate = null;
         }
     }
 }

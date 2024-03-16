@@ -29,7 +29,7 @@ builder.Services.AddSingleton<FailoverBase, Failover>();
 builder.Services.AddSingleton(grpcClient);
 builder.Services.AddTransient<Game>();
 builder.Services.AddTransient<Bot>();
-builder.Services.AddTransient<Player>();
+/*builder.Services.AddTransient<Player>();*/
 
 var app = builder.Build();
 

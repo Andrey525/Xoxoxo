@@ -16,10 +16,10 @@
         <table class="center">
             <tr>
         <td>
-            <button type="button" id="choose-value" @onclick="async () => { Player.Value = TicTacToeValue.X; Bot.Value = TicTacToeValue.O; await Game.Init(LineSize); }">Choose X</button>
+            <button type="button" id="choose-value" @onclick="async () => { Game.XMove += MakeMove; Game.OMove += Bot.MakeMove; Game.GameStateUpdate += StateHasChanged; Game.Init(LineSize); await Game.Run(); }">Choose X</button>
         </td>
         <td>
-            <button type="button" id="choose-value"  @onclick="async () => { Player.Value = TicTacToeValue.O; Bot.Value = TicTacToeValue.X; await Game.Init(LineSize); }">Choose O</button>
+            <button type="button" id="choose-value"  @onclick="async () => { Game.OMove += MakeMove; Game.XMove += Bot.MakeMove; Game.GameStateUpdate += StateHasChanged; Game.Init(LineSize); await Game.Run(); }">Choose O</button>
         </td>
     </tr>
     </table>
@@ -36,7 +36,7 @@
                   @if (Game.GetValue(i, j) == TicTacToeValue.No)
                   {
                         int row = i, col = j;
-                        <button type="button" class="cell" @onclick="() => Player.MakeMove(row, col)"></button>
+                        <button type="button" class="cell" @onclick="() => { _nextMoveRow = row; _nextMoveCol = col; semaphoreSlim.Release(); }"></button>
                   }
                   else
                   {
@@ -58,17 +58,20 @@
 
 @code {
     [Inject] Game Game { get; set; }
-    [Inject] Player Player { get; set; }
     [Inject] Bot Bot { get; set; }
     const int LineSize = 3;
+    int _nextMoveRow;
+    int _nextMoveCol;
+    SemaphoreSlim semaphoreSlim;
 
     protected override void OnInitialized()
     {
-        Game.BotMove += Bot.MakeMove;
         Bot.Game = Game;
-        Player.Game = Game;
 
         Bot.ChangeHelper(typeof(RemoteHelper));
+
+        semaphoreSlim = new SemaphoreSlim(1, 1);
+        semaphoreSlim.WaitAsync();
     }
 
     private void ReloadPage()
@@ -78,6 +81,14 @@
 
     public void Dispose()
     {
-        Game.BotMove -= Bot.MakeMove;
+        
+    }
+
+    private async Task<Point> MakeMove()
+    {
+        Console.WriteLine("MakeMove");
+        await semaphoreSlim.WaitAsync();
+
+        return new Point(_nextMoveRow, _nextMoveCol);
     }
 }

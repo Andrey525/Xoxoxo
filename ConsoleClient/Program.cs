@@ -1,62 +1,37 @@
 ﻿using ConsoleClient.Data;
 using Grpc.Net.Client;
 using Intellectual;
+using Microsoft.Extensions.Logging;
 using TicTacToeLib;
 
 namespace ConsoleClient
 {
     public static class Program
     {
-        const int LineSize = 3;
+
         public static async Task Main()
         {
-            using var channel = GrpcChannel.ForAddress("http://localhost:5291");
-            var grpcClient = new IntellectService.IntellectServiceClient(channel);
+            Battle battle = new Battle();
+            await battle.Run();
+        }
+    }
 
-            IHelper remoteHelper = new RemoteHelper(grpcClient);
-            IHelper localHelper = new LocalHelper();
-            var helpers = new List<IHelper> { remoteHelper, localHelper };
-            FailoverBase failover = new Failover(helpers);
-
-            Game game = new Game();
-            Bot bot = new Bot(helpers, failover);
-            Player player = new Player();
-
-            Console.WriteLine("Do you want to play for X? <yes/no>");
-
-            var answer = Console.ReadLine();
-            if (answer?.ToLower() == "yes" || answer?.ToLower() == "y")
-            {
-                player.Value = TicTacToeValue.X;
-                bot.Value = TicTacToeValue.O;
-            }
-            else
-            {
-                player.Value = TicTacToeValue.O;
-                bot.Value = TicTacToeValue.X;
-            }
-
-            game.BotMove += bot.MakeMove;
-            bot.Game = game;
-            player.Game = game;
-            bot.ChangeHelper(typeof(RemoteHelper));
-            await game.Init(LineSize);
-
-
-            PrintTable(game);
-            while (!game.IsOvered)
-            {
-                Console.WriteLine("Enter row: ");
-                var row = int.Parse(Console.ReadLine());
-                Console.WriteLine("Enter col: ");
-                var col = int.Parse(Console.ReadLine());
-                await player.MakeMove(row, col);
-                PrintTable(game);
-            }
-            Console.WriteLine($"Game over! Winner: {game.Winner}");
+    public class Battle
+    {
+        const int LineSize = 3;
+        Game game;
+        Bot bot;
+        Task<Point> PlayerInterractionHandler()
+        {
+            PrintTable();
+            Console.WriteLine("Enter row: ");
+            var row = int.Parse(Console.ReadLine());
+            Console.WriteLine("Enter col: ");
+            var col = int.Parse(Console.ReadLine());
+            return Task.FromResult(new Point(row, col));
         }
 
-        static void PrintTable(Game game)
+        void PrintTable()
         {
             for (int i = 0; i < game.LineSize; i++)
             {
@@ -66,6 +41,44 @@ namespace ConsoleClient
                 }
                 Console.WriteLine();
             }
+        }
+
+        public async Task Run()
+        {
+            using var channel = GrpcChannel.ForAddress("http://localhost:5291");
+            var grpcClient = new IntellectService.IntellectServiceClient(channel);
+
+            IHelper remoteHelper = new RemoteHelper(grpcClient);
+            IHelper localHelper = new LocalHelper();
+            var helpers = new List<IHelper> { remoteHelper, localHelper };
+            FailoverBase failover = new Failover(helpers);
+
+            using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+            var logger = factory.CreateLogger<Game>();
+
+            game = new Game(logger);
+            bot = new Bot(helpers, failover);
+            bot.Game = game;
+
+            Console.WriteLine("Do you want to play for X? <yes/no>");
+
+            var answer = Console.ReadLine();
+            if (answer?.ToLower() == "yes" || answer?.ToLower() == "y")
+            {
+                game.XMove += PlayerInterractionHandler;
+                game.OMove += bot.MakeMove;
+            }
+            else
+            {
+                game.OMove += PlayerInterractionHandler;
+                game.XMove += bot.MakeMove;
+            }
+
+            bot.ChangeHelper(typeof(RemoteHelper));
+            game.GameOver += PrintTable;
+            game.GameOver += () => Console.WriteLine($"Game over! Winner: {game.Winner}");
+            game.Init(LineSize);
+            await game.Run();
         }
     }
 
