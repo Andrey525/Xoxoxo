@@ -283,7 +283,6 @@ namespace TicTacToeLib
 
         public void Dispose()
         {
-            Console.WriteLine("Dispose Game");
             XMove = null;
             OMove = null;
             GameOver = null;
