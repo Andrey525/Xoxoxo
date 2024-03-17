@@ -5,29 +5,25 @@ namespace TicTacToeLib
     public class Game : IDisposable
     {
         private readonly ILogger<Game> _logger;
-        internal State _state = null;
+        internal State _state;
         public int LineSize => _state.LineSize;
 
-        public event MoveCallback XMove;
-        public event MoveCallback OMove;
+        public event MoveCallback? XMove;
+        public event MoveCallback? OMove;
         public delegate Task<Point> MoveCallback();
 
-        public event UpdateComponentCallback GameOver;
-        public event UpdateComponentCallback GameStateUpdate;
+        public event UpdateComponentCallback? GameOver;
+        public event UpdateComponentCallback? GameStateUpdate;
         public delegate void UpdateComponentCallback();
 
         public Game(ILogger<Game> logger)
         {
             _logger = logger;
+            _state = new State(3);
+            IsStarted = false;
         }
 
-        public bool IsStarted
-        {
-            get
-            {
-                return _state != null;
-            }
-        }
+        public bool IsStarted { get; private set; }
         public bool IsOvered
         {
             get
@@ -50,6 +46,7 @@ namespace TicTacToeLib
             if (!IsStarted)
             {
                 _state = new State(lineSize);
+                IsStarted = true;
             }
         }
         public TicTacToeValue GetValue(int row, int col)
@@ -75,6 +72,10 @@ namespace TicTacToeLib
 
         public async Task Run()
         {
+            if (XMove == null || OMove == null)
+            {
+                return;
+            }
             while (!IsOvered)
             {
                 TicTacToeValue moveValue = (_state.ProgressState == TicTacToeState.WaitXMove) ? TicTacToeValue.X : TicTacToeValue.O;

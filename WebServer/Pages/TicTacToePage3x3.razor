@@ -36,7 +36,7 @@
                   @if (Game.GetValue(i, j) == TicTacToeValue.No)
                   {
                         int row = i, col = j;
-                        <button type="button" class="cell" @onclick="() => { _nextMoveRow = row; _nextMoveCol = col; semaphoreSlim.Release(); }"></button>
+                        <button type="button" class="cell" @onclick="() => { _nextMoveRow = row; _nextMoveCol = col; if (semaphoreSlim.CurrentCount == 0) semaphoreSlim.Release(1); }"></button>
                   }
                   else
                   {
@@ -57,8 +57,8 @@
 </div>
 
 @code {
-    [Inject] Game Game { get; set; }
-    [Inject] Bot Bot { get; set; }
+    [Inject] Game? Game { get; set; }
+    [Inject] Bot? Bot { get; set; }
     const int LineSize = 3;
     int _nextMoveRow;
     int _nextMoveCol;
@@ -86,9 +86,7 @@
 
     private async Task<Point> MakeMove()
     {
-        Console.WriteLine("MakeMove");
         await semaphoreSlim.WaitAsync();
-
         return new Point(_nextMoveRow, _nextMoveCol);
     }
 }
