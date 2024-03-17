@@ -82,12 +82,7 @@ namespace TicTacToeLib
 
                 Point coordinates = await ((moveValue == TicTacToeValue.X) ? XMove.Invoke() : OMove.Invoke());
 
-                bool isValidMove = ValidateMove(coordinates.X, coordinates.Y, moveValue);
-
-                if (isValidMove)
-                {
-                    UpdateGameState(coordinates.X, coordinates.Y, moveValue);
-                }
+                UpdateGameState(coordinates.X, coordinates.Y, moveValue);
             }
             GameOver?.Invoke();
         }
@@ -118,6 +113,12 @@ namespace TicTacToeLib
 
         public void UpdateGameState(int row, int col, TicTacToeValue value)
         {
+            bool isValidMove = ValidateMove(row, col, value);
+            if (!isValidMove)
+            {
+                return;
+            }
+
             _state.Values[row, col] = value;
             _state.CurrentMoveCount++;
             var winner = DetermineWinner(row, col, value);

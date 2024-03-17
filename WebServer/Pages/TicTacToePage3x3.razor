@@ -3,7 +3,6 @@
 @using WebServer.Data
 @using Intellectual
 @using TicTacToeLib
-@implements IDisposable
 
 @inject NavigationManager NavigationManager
 
@@ -77,11 +76,6 @@
     private void ReloadPage()
     {
         NavigationManager.NavigateTo(NavigationManager.Uri, true);
-    }
-
-    public void Dispose()
-    {
-        
     }
 
     private async Task<Point> MakeMove()

@@ -23,12 +23,17 @@ namespace ConsoleClient
         Bot bot;
         Task<Point> PlayerInterractionHandler()
         {
-            PrintTable();
             Console.WriteLine("Enter row: ");
             var row = int.Parse(Console.ReadLine());
             Console.WriteLine("Enter col: ");
             var col = int.Parse(Console.ReadLine());
             return Task.FromResult(new Point(row, col));
+        }
+
+        Task<Point> BotMoveHandler()
+        {
+            Console.WriteLine("Bot move:");
+            return bot.MakeMove();
         }
 
         void PrintTable()
@@ -66,17 +71,18 @@ namespace ConsoleClient
             if (answer?.ToLower() == "yes" || answer?.ToLower() == "y")
             {
                 game.XMove += PlayerInterractionHandler;
-                game.OMove += bot.MakeMove;
+                game.OMove += BotMoveHandler;
             }
             else
             {
                 game.OMove += PlayerInterractionHandler;
-                game.XMove += bot.MakeMove;
+                game.XMove += BotMoveHandler;
             }
 
             bot.ChangeHelper(typeof(RemoteHelper));
-            game.GameOver += PrintTable;
+            game.GameStateUpdate += PrintTable;
             game.GameOver += () => Console.WriteLine($"Game over! Winner: {game.Winner}");
+            game.GameOver += PrintTable;
             game.Init(LineSize);
             await game.Run();
         }
