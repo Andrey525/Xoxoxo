@@ -13,6 +13,8 @@ namespace WebServer.Pages
         int _nextMoveCol;
         TaskCompletionSource tcs;
 
+        State? state;
+
         protected override void OnInitialized()
         {
             Bot.Game = Game;
@@ -43,6 +45,12 @@ namespace WebServer.Pages
             tcs.TrySetResult();
         }
 
+        private void OnRestoreStateButtonClick()
+        {
+            if (state != null)
+                Game.RestoreState(state);
+        }
+
         private async Task<Point> MakeMove()
         {
             /* 
@@ -51,6 +59,8 @@ namespace WebServer.Pages
              */
             await tcs.Task;
             tcs = new TaskCompletionSource();
+
+            state = Game.SaveState();
 
             return new Point(_nextMoveRow, _nextMoveCol);
         }

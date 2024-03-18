@@ -44,7 +44,11 @@
             </tr>
         }
   </table>
-  <button type="button" id="restart" @onclick=@ReloadPage>Restart</button> 
+    @if (!Game.IsOvered)
+    {
+        <button type="button" id="restart" @onclick=@OnRestoreStateButtonClick>Restore</button>
+    }
+    <button type="button" id="restart" @onclick=@ReloadPage>Restart</button>
   }
   @if (Game.IsOvered)
     {
