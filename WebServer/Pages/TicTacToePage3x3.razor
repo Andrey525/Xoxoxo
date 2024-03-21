@@ -7,52 +7,52 @@
 <PageTitle>TicTacToe</PageTitle>
 
 <div id="game-screen" class="center">
-  <h2 align="center">TicTacToe Game</h2>
-  @if (!Game.IsStarted)
-  {
-        <table class="center">
-            <tr>
-        <td>
-            <button type="button" id="choose-value" @onclick="async () => await OnChooseButtonClick(MakeMove, Bot.MakeMove)">Choose X</button>
-        </td>
-        <td>
-            <button type="button" id="choose-value"  @onclick="async () => await OnChooseButtonClick(Bot.MakeMove, MakeMove)">Choose O</button>
-        </td>
-    </tr>
-    </table>
-  }
-  else
-  {
-    <table class="center">
-        @for (int i = 0; i < Game.LineSize; i++)
-        {
-            <tr>
-             @for (int j = 0; j < Game.LineSize; j++)
-             {
-                <td>
-                  @if (Game.GetValue(i, j) == TicTacToeValue.No)
-                  {
-                        int row = i, col = j;
-                        <button type="button" class="cell" @onclick="() => OnButtonClick(row, col)"></button>
-                  }
-                  else
-                  {
-                        <button type="button" class="cell">@Game.GetValue(i, j)</button>
-                  }
-                </td>
-             }
-            </tr>
-        }
-  </table>
-    @if (!Game.IsOvered)
-    {
-        <button type="button" id="restart" @onclick=@OnRestoreStateButtonClick>Restore</button>
-    }
-    <button type="button" id="restart" @onclick=@ReloadPage>Restart</button>
-  }
-  @if (Game.IsOvered)
-    {
-        <h2 align="center">Winner: @Game.Winner</h2>
-    }
-    
+	<h2 align="center">TicTacToe Game</h2>
+	@if (!Game.IsStarted)
+	{
+		<table class="center">
+			<tr>
+				<td>
+					<button type="button" id="choose-value" @onclick="async () => await OnChooseButtonClick(MakeMove, Bot.MakeMove)">Choose X</button>
+				</td>
+				<td>
+					<button type="button" id="choose-value" @onclick="async () => await OnChooseButtonClick(Bot.MakeMove, MakeMove)">Choose O</button>
+				</td>
+			</tr>
+		</table>
+	}
+	else
+	{
+		<table class="center">
+			@for (int i = 0; i < Game.LineSize; i++)
+			{
+				<tr>
+					@for (int j = 0; j < Game.LineSize; j++)
+					{
+						<td>
+							@if (Game.GetValue(i, j) == TicTacToeValue.No)
+							{
+								int row = i, col = j;
+								<button type="button" class="cell" @onclick="() => OnButtonClick(row, col)"></button>
+							}
+							else
+							{
+								<button type="button" class="cell">@Game.GetValue(i, j)</button>
+							}
+						</td>
+					}
+				</tr>
+			}
+		</table>
+		@if (!Game.IsOvered)
+		{
+			<button type="button" id="restart" @onclick=@OnRestoreStateButtonClick>Restore</button>
+		}
+		<button type="button" id="restart" @onclick=@ReloadPage>Restart</button>
+	}
+	@if (Game.IsOvered)
+	{
+		<h2 align="center">Winner: @Game.Winner</h2>
+	}
+
 </div>
